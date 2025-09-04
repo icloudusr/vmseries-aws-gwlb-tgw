@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<config version="10.0.0" urldb="paloaltonetworks">
+<config version="11.1.0" urldb="paloaltonetworks">
   <devices>
     <entry name="localhost.localdomain">
       <network>
@@ -43,7 +43,7 @@
                         <entry name="monitor">
                           <enable>yes</enable>
                           <source>DHCP</source>
-                          <destination>10.0.1.1</destination>
+                          <destination>10.210.1.1</destination>
                           <interval>3</interval>
                           <count>5</count>
                         </entry>
@@ -53,7 +53,7 @@
                       <hold-time>2</hold-time>
                     </path-monitor>
                     <nexthop>
-                      <ip-address>10.0.1.1</ip-address>
+                      <ip-address>10.210.1.1</ip-address>
                     </nexthop>
                     <bfd>
                       <profile>None</profile>
@@ -71,7 +71,7 @@
                         <entry name="monitor">
                           <enable>yes</enable>
                           <source>DHCP</source>
-                          <destination>10.0.1.1</destination>
+                          <destination>10.210.1.1</destination>
                           <interval>3</interval>
                           <count>5</count>
                         </entry>
@@ -81,7 +81,7 @@
                       <hold-time>2</hold-time>
                     </path-monitor>
                     <nexthop>
-                      <ip-address>10.0.1.1</ip-address>
+                      <ip-address>10.210.1.1</ip-address>
                     </nexthop>
                     <bfd>
                       <profile>None</profile>
@@ -99,7 +99,7 @@
                         <entry name="monitor">
                           <enable>yes</enable>
                           <source>DHCP</source>
-                          <destination>10.0.1.1</destination>
+                          <destination>10.210.1.1</destination>
                           <interval>3</interval>
                           <count>5</count>
                         </entry>
@@ -109,7 +109,7 @@
                       <hold-time>2</hold-time>
                     </path-monitor>
                     <nexthop>
-                      <ip-address>10.0.1.1</ip-address>
+                      <ip-address>10.210.1.1</ip-address>
                     </nexthop>
                     <bfd>
                       <profile>None</profile>
@@ -127,7 +127,7 @@
                         <entry name="monitor">
                           <enable>yes</enable>
                           <source>DHCP</source>
-                          <destination>10.0.1.17</destination>
+                          <destination>10.210.1.17</destination>
                           <interval>3</interval>
                           <count>5</count>
                         </entry>
@@ -137,7 +137,7 @@
                       <hold-time>2</hold-time>
                     </path-monitor>
                     <nexthop>
-                      <ip-address>10.0.1.17</ip-address>
+                      <ip-address>10.210.1.17</ip-address>
                     </nexthop>
                     <bfd>
                       <profile>None</profile>
@@ -155,7 +155,7 @@
                         <entry name="monitor">
                           <enable>yes</enable>
                           <source>DHCP</source>
-                          <destination>10.0.1.17</destination>
+                          <destination>10.210.1.17</destination>
                           <interval>3</interval>
                           <count>5</count>
                         </entry>
@@ -165,7 +165,7 @@
                       <hold-time>2</hold-time>
                     </path-monitor>
                     <nexthop>
-                      <ip-address>10.0.1.17</ip-address>
+                      <ip-address>10.210.1.17</ip-address>
                     </nexthop>
                     <bfd>
                       <profile>None</profile>
@@ -183,7 +183,7 @@
                         <entry name="monitor">
                           <enable>yes</enable>
                           <source>DHCP</source>
-                          <destination>10.0.1.17</destination>
+                          <destination>10.210.1.17</destination>
                           <interval>3</interval>
                           <count>5</count>
                         </entry>
@@ -193,7 +193,7 @@
                       <hold-time>2</hold-time>
                     </path-monitor>
                     <nexthop>
-                      <ip-address>10.0.1.17</ip-address>
+                      <ip-address>10.210.1.17</ip-address>
                     </nexthop>
                     <bfd>
                       <profile>None</profile>
@@ -516,10 +516,10 @@
                     <member loc="aws-gwlb">trust</member>
                   </from>
                   <source loc="aws-gwlb">
-                    <member loc="aws-gwlb">spoke1-vpc</member>
+                    <member loc="aws-gwlb">spk1-vpc</member>
                   </source>
                   <destination loc="aws-gwlb">
-                    <member loc="aws-gwlb">spoke2-vpc</member>
+                    <member loc="aws-gwlb">spk2-vpc</member>
                   </destination>
                   <source-user loc="aws-gwlb">
                     <member loc="aws-gwlb">any</member>
@@ -594,7 +594,7 @@
                     <member loc="aws-gwlb">world</member>
                   </source>
                   <destination loc="aws-gwlb">
-                    <member loc="aws-gwlb">spoke1-vpc</member>
+                    <member loc="aws-gwlb">spk1-vpc</member>
                   </destination>
                   <source-user loc="aws-gwlb">
                     <member loc="aws-gwlb">any</member>
@@ -687,20 +687,20 @@
             </dos>
           </rulebase>
           <address>
-            <entry name="spoke1-vpc" loc="aws-gwlb">
-              <ip-netmask loc="aws-gwlb">10.1.0.0/16</ip-netmask>
+            <entry name="spk1-vpc" loc="aws-gwlb">
+              <ip-netmask loc="aws-gwlb">10.211.0.0/16</ip-netmask>
               <tag loc="aws-gwlb">
                 <member loc="aws-gwlb">aws-ip</member>
               </tag>
             </entry>
-            <entry name="spoke2-vpc" loc="aws-gwlb">
-              <ip-netmask loc="aws-gwlb">10.2.0.0/16</ip-netmask>
+            <entry name="spk2-vpc" loc="aws-gwlb">
+              <ip-netmask loc="aws-gwlb">10.212.0.0/16</ip-netmask>
               <tag loc="aws-gwlb">
                 <member loc="aws-gwlb">aws-ip</member>
               </tag>
             </entry>
             <entry name="gwlbe" loc="aws-gwlb">
-              <ip-netmask loc="aws-gwlb">10.0.3.0/24</ip-netmask>
+              <ip-netmask loc="aws-gwlb">10.210.3.0/24</ip-netmask>
               <tag loc="aws-gwlb">
                 <member loc="aws-gwlb">aws-ip</member>
               </tag>
@@ -792,7 +792,7 @@
             </servers>
           </dns-setting>
           <hostname>PA-VM</hostname>
-        </system>
+        </s>
         <setting>
           <config>
             <rematch>yes</rematch>
@@ -813,8 +813,8 @@
               <dns-secondary>4.2.2.2</dns-secondary>
               <panorama-server>74.97.22.10</panorama-server>
               <vm-auth-key>700903839607970</vm-auth-key>
-              <dgname>aws-gwlb</dgname>
-              <tplname>aws-gwlb_stack</tplname>
+              <dgname>swfw</dgname>
+              <tplname>swfw_stack</tplname>
             </initcfg>
           </management>
         </setting>

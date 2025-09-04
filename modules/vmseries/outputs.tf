@@ -1,35 +1,49 @@
-output "eni0" {
-  value = aws_network_interface.eni0.*.id
+# =============================================================================
+# S3 BOOTSTRAP MODULE - OUTPUTS (PHASE 1 - SIMPLIFIED)
+# =============================================================================
+
+output "bucket_name" {
+  description = "Name of the created S3 bootstrap bucket"
+  value       = aws_s3_bucket.bootstrap.id
 }
 
-output "eni1" {
-  value = aws_network_interface.eni1.*.id
+output "bucket_arn" {
+  description = "ARN of the created S3 bootstrap bucket"
+  value       = aws_s3_bucket.bootstrap.arn
 }
 
-# output "eni2" {
-#   value = aws_network_interface.eni2.*.id
-# }
+# =============================================================================
+# IAM OUTPUTS
+# =============================================================================
 
-output "instance_id" {
-  value = aws_instance.main.*.id
+output "instance_profile" {
+  description = "Name of the IAM instance profile for VM-Series (null if not created)"
+  value       = var.create_instance_profile ? aws_iam_instance_profile.vmseries[0].name : null
 }
 
-
-
-output "eni0_public_ip" {
-  value = var.eni0_public_ip ? aws_eip.eni0_pip.*.public_ip : []
+output "instance_profile_arn" {
+  description = "ARN of the IAM instance profile for VM-Series (null if not created)"
+  value       = var.create_instance_profile ? aws_iam_instance_profile.vmseries[0].arn : null
 }
 
-output "eni1_public_ip" {
-  value = var.eni1_public_ip ? aws_eip.eni1_pip.*.public_ip : []
+output "iam_role_name" {
+  description = "Name of the IAM role for VM-Series (null if not created)"
+  value       = var.create_instance_profile ? aws_iam_role.vmseries[0].name : null
 }
 
-# output "eni2_public_ip" {
-#   value = var.eni2_public_ip ? aws_eip.eni2_pip.*.public_ip : []
-# }
+output "iam_role_arn" {
+  description = "ARN of the IAM role for VM-Series (null if not created)"
+  value       = var.create_instance_profile ? aws_iam_role.vmseries[0].arn : null
+}
 
+# =============================================================================
+# BOOTSTRAP INSTRUCTIONS
+# =============================================================================
 
-
-output "data_security_group" {
-    value = aws_security_group.data.id
+output "bootstrap_instructions" {
+  description = "Instructions for using this bootstrap bucket with VM-Series"
+  value = {
+    user_data_example = "vmseries-bootstrap-aws-s3bucket=${aws_s3_bucket.bootstrap.id}"
+    required_iam_role = var.create_instance_profile ? aws_iam_instance_profile.vmseries[0].name : "Create instance profile separately"
+  }
 }

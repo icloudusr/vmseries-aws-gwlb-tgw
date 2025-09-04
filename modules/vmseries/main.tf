@@ -1,11 +1,13 @@
+# =============================================================================
+# VM-SERIES MODULE (PHASE 1 - BACKWARD COMPATIBLE)
+# =============================================================================
 
-resource "null_resource" "dependency_getter" {
-  provisioner "local-exec" {
-    command = "echo ${length(var.dependencies)}"
-  }
-}
+# =============================================================================
+# DATA SOURCES
+# =============================================================================
 
-data "aws_ami" "main" {
+# Get VM-Series AMI
+data "aws_ami" "vmseries" {
   most_recent = true
   owners      = ["aws-marketplace"]
 
@@ -15,7 +17,7 @@ data "aws_ami" "main" {
   }
 
   filter {
-    name = "product-code"
+    name   = "product-code"
     values = [var.license_type_map[var.license]]
   }
 
@@ -25,141 +27,246 @@ data "aws_ami" "main" {
   }
 }
 
-resource "aws_security_group" "mgmt" {
-  vpc_id      = var.vpc_id
-  description = "VM-Series Management SG"
+# Get current AWS region and account
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
 
+# =============================================================================
+# LOCALS FOR CONFIGURATION
+# =============================================================================
+
+locals {
+  # Calculate actual VM count
+  vm_count = var.vm_count
+
+  # ✅ BACKWARD COMPATIBILITY: Use new variable if provided, otherwise fall back to old one
+  mgmt_cidrs = var.mgmt_sg_cidrs != null ? var.mgmt_sg_cidrs : var.eni0_sg_prefix
+
+  # Common tags for all resources
+  common_tags = merge(
+    {
+      Name         = var.name
+      Environment  = var.environment
+      Project      = var.project_name
+      Module       = "vm-series"
+      PanosVersion = var.panos
+      License      = var.license
+      ManagedBy    = "terraform"
+    },
+    var.common_tags
+  )
+}
+
+# =============================================================================
+# SECURITY GROUPS
+# =============================================================================
+
+# Management Security Group
+resource "aws_security_group" "management" {
+  name_prefix = "${var.name}-mgmt-"
+  description = "VM-Series Management Interface Security Group"
+  vpc_id      = var.vpc_id
+
+  # HTTPS Management Access
   ingress {
+    description = "HTTPS Management Access"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = var.eni0_sg_prefix
+    cidr_blocks = local.mgmt_cidrs
   }
 
+  # SSH Management Access
   ingress {
+    description = "SSH Management Access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = var.eni0_sg_prefix
+    cidr_blocks = local.mgmt_cidrs
   }
 
+  # Outbound internet access
   egress {
-    from_port   = "0"
-    to_port     = "0"
+    description = "All outbound traffic"
+    from_port   = 0
+    to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${var.name}-mgmt-sg"
+    Type = "Management"
+  })
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
+# Data Plane Security Group
 resource "aws_security_group" "data" {
+  name_prefix = "${var.name}-data-"
+  description = "VM-Series Data Interfaces Security Group"
   vpc_id      = var.vpc_id
-  description = "VM-Series Dataplane SG"
 
+  # Allow all traffic for firewall inspection
   ingress {
-    from_port   = "0"
-    to_port     = "0"
+    description = "All inbound traffic for inspection"
+    from_port   = 0
+    to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port   = "0"
-    to_port     = "0"
+    description = "All outbound traffic"
+    from_port   = 0
+    to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
+  tags = merge(local.common_tags, {
     Name = "${var.name}-data-sg"
+    Type = "DataPlane"
+  })
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
+# =============================================================================
+# NETWORK INTERFACES
+# =============================================================================
+
+# ENI0 - Trust/Data Interface
 resource "aws_network_interface" "eni0" {
-  count             = var.vm_count
-  subnet_id         = var.eni0_subnet
-  security_groups   = [aws_security_group.data.id]
+  count           = local.vm_count
+  subnet_id       = var.eni0_subnet
+  security_groups = [aws_security_group.data.id]
+  
   source_dest_check = false
+  description       = "${var.name}-${count.index}-trust"
 
-  tags = {
-    Name = "${var.name}-eni0"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}-eni0"
+    Type = "trust"
+  })
 }
 
+# ENI1 - Management Interface
 resource "aws_network_interface" "eni1" {
-  count             = var.vm_count
-  subnet_id         = var.eni1_subnet
-  security_groups   = [aws_security_group.data.id]
-  source_dest_check = false
+  count           = local.vm_count
+  subnet_id       = var.eni1_subnet
+  security_groups = [aws_security_group.management.id]
+  
+  source_dest_check = true  # Management interface should have source/dest check
+  description       = "${var.name}-${count.index}-management"
 
-  tags = {
-    Name = "${var.name}-eni1"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}-eni1"
+    Type = "management"
+  })
 }
 
+# ENI2 - Untrust/Data Interface (Optional)
 resource "aws_network_interface" "eni2" {
-  count             = var.vm_count
-  subnet_id         = var.eni2_subnet
-  security_groups   = [aws_security_group.data.id]
+  count           = var.eni2_subnet != null ? local.vm_count : 0
+  subnet_id       = var.eni2_subnet
+  security_groups = [aws_security_group.data.id]
+  
   source_dest_check = false
+  description       = "${var.name}-${count.index}-untrust"
 
-  tags = {
-    Name = "${var.name}-eni2"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}-eni2"
+    Type = "untrust"
+  })
 }
 
-resource "aws_eip" "eni0_pip" {
-  count             = var.eni0_public_ip ? var.vm_count : 0
-  vpc               = true
-  network_interface = element(aws_network_interface.eni0.*.id, count.index)
+# =============================================================================
+# ELASTIC IPs
+# =============================================================================
 
-  tags = {
-    Name = "${var.name}-eni0-eip"
-  }
+# EIP for ENI0 (Trust) - if requested
+resource "aws_eip" "eni0" {
+  count             = var.eni0_public_ip ? local.vm_count : 0
+  domain            = "vpc"
+  network_interface = aws_network_interface.eni0[count.index].id
+
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}-eni0-eip"
+    Type = "Trust"
+  })
+
+  depends_on = [aws_network_interface.eni0]
 }
 
-resource "aws_eip" "eni1_pip" {
-  count             = var.eni1_public_ip ? var.vm_count : 0
-  vpc               = true
-  network_interface = element(aws_network_interface.eni1.*.id, count.index)
+# EIP for ENI1 (Management)
+resource "aws_eip" "eni1" {
+  count             = var.eni1_public_ip ? local.vm_count : 0
+  domain            = "vpc"
+  network_interface = aws_network_interface.eni1[count.index].id
 
-  tags = {
-    Name = "${var.name}-eni1-eip"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}-eni1-eip"
+    Type = "Management"
+  })
+
+  depends_on = [aws_network_interface.eni1]
 }
 
-resource "aws_eip" "eni2_pip" {
-  count             = var.eni2_public_ip ? var.vm_count : 0
-  vpc               = true
-  network_interface = element(aws_network_interface.eni2.*.id, count.index)
+# EIP for ENI2 (Untrust) - if interface exists and requested
+resource "aws_eip" "eni2" {
+  count             = (var.eni2_subnet != null && var.eni2_public_ip) ? local.vm_count : 0
+  domain            = "vpc"
+  network_interface = aws_network_interface.eni2[count.index].id
 
-  tags = {
-    Name = "${var.name}-eni2-eip"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}-eni2-eip"
+    Type = "Untrust"
+  })
+
+  depends_on = [aws_network_interface.eni2]
 }
 
-resource "aws_instance" "main" {
-  count                                = var.vm_count
-  disable_api_termination              = false
-  instance_initiated_shutdown_behavior = "stop"
-  iam_instance_profile                 = var.instance_profile
-  user_data = var.user_data
-  #user_data = base64encode(join("", ["vmseries-bootstrap-aws-s3bucket=", var.s3_bucket]),)
+# =============================================================================
+# VM-SERIES INSTANCES
+# =============================================================================
 
-  ebs_optimized = true
-  ami           = data.aws_ami.main.image_id
+resource "aws_instance" "vmseries" {
+  count = local.vm_count
+
+  # Basic instance configuration
+  ami           = data.aws_ami.vmseries.image_id
   instance_type = var.size
   key_name      = var.key_name
 
-  monitoring = false
+  # Performance and monitoring
+  ebs_optimized = true
+  monitoring    = var.enable_detailed_monitoring
 
+  # Security and IAM
+  iam_instance_profile = var.instance_profile
+
+  # Shutdown behavior
+  disable_api_termination              = var.enable_termination_protection
+  instance_initiated_shutdown_behavior = "stop"
+
+  # User data for bootstrap
+  user_data = var.user_data != "" ? var.user_data : null
+
+  # Storage configuration
   root_block_device {
-    delete_on_termination = "true"
+    volume_type           = var.root_volume_type
+    volume_size           = var.root_volume_size
+    encrypted             = var.root_volume_encrypted
+    delete_on_termination = true
   }
 
+  # Network interfaces
   network_interface {
     device_index         = 0
     network_interface_id = aws_network_interface.eni0[count.index].id
@@ -170,23 +277,37 @@ resource "aws_instance" "main" {
     network_interface_id = aws_network_interface.eni1[count.index].id
   }
 
-  network_interface {
-    device_index         = 2
-    network_interface_id = aws_network_interface.eni2[count.index].id
+  # Optional third interface
+  dynamic "network_interface" {
+    for_each = var.eni2_subnet != null ? [1] : []
+    content {
+      device_index         = 2
+      network_interface_id = aws_network_interface.eni2[count.index].id
+    }
   }
 
-  tags = {
-    Name = var.name
-  }
+  # Comprehensive tagging
+  tags = merge(local.common_tags, {
+    Name = "${var.name}-${count.index}"
+    Type = "VM-Series"
+    AZ   = aws_network_interface.eni0[count.index].availability_zone
+  })
 
-
-#${self.network_interface.1.private_ip}
-# ${element(aws_network_interface.eni1.private_ip, count.index)}
+  # Dependencies
   depends_on = [
-    aws_eip.eni0_pip,
-    aws_eip.eni1_pip,
     aws_network_interface.eni0,
     aws_network_interface.eni1,
-    aws_network_interface.eni2
+    aws_network_interface.eni2,
+    aws_eip.eni0,
+    aws_eip.eni1,
+    aws_eip.eni2
   ]
+
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes = [
+      ami,       # Ignore AMI changes to prevent accidental upgrades
+      user_data  # Ignore user_data changes after initial deployment
+    ]
+  }
 }

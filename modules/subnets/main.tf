@@ -1,110 +1,93 @@
-variable "subnets" {
-  type        = map(map(any))
-  default     = {}
+# =============================================================================
+# SUBNETS MODULE
+# =============================================================================
+# This module creates multiple subnets in a VPC with flexible configuration
+# and comprehensive tagging support.
+
+terraform {
+  required_version = ">= 1.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+  }
 }
 
-variable cidr_block {
-  default = "10.0.0.0/16"
+# =============================================================================
+# DATA SOURCES FOR VALIDATION
+# =============================================================================
+
+data "aws_vpc" "main" {
+  id = var.vpc_id
 }
 
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# =============================================================================
+# LOCALS FOR SUBNET VALIDATION AND PROCESSING
+# =============================================================================
+
+locals {
+  # Validate that all AZs are valid
+  valid_azs = toset(data.aws_availability_zones.available.names)
+  
+  # Process subnets with validation
+  processed_subnets = {
+    for name, config in var.subnets : name => {
+      az   = config.az
+      cidr = config.cidr
+      
+      # Optional configurations with defaults
+      map_public_ip_on_launch                 = lookup(config, "map_public_ip_on_launch", false)
+      assign_ipv6_address_on_creation        = lookup(config, "assign_ipv6_address_on_creation", false)
+      enable_dns64                           = lookup(config, "enable_dns64", false)
+      enable_resource_name_dns_a_record_on_launch    = lookup(config, "enable_resource_name_dns_a_record_on_launch", false)
+      enable_resource_name_dns_aaaa_record_on_launch = lookup(config, "enable_resource_name_dns_aaaa_record_on_launch", false)
+      ipv6_native                            = lookup(config, "ipv6_native", false)
+      
+      # Custom tags from subnet config
+      tags = lookup(config, "tags", {})
+    }
+  }
+}
+
+# =============================================================================
+# SUBNET RESOURCES
+# =============================================================================
 
 resource "aws_subnet" "main" {
-  for_each = var.subnets
+  for_each = local.processed_subnets
 
   vpc_id            = var.vpc_id
-  availability_zone = each.value["az"]
-  cidr_block        = each.value["cidr"]
+  availability_zone = each.value.az
+  cidr_block        = each.value.cidr
 
-    tags = merge(
+  # Optional networking configurations
+  map_public_ip_on_launch                 = each.value.map_public_ip_on_launch
+  assign_ipv6_address_on_creation        = each.value.assign_ipv6_address_on_creation
+  enable_dns64                           = each.value.enable_dns64
+  enable_resource_name_dns_a_record_on_launch    = each.value.enable_resource_name_dns_a_record_on_launch
+  enable_resource_name_dns_aaaa_record_on_launch = each.value.enable_resource_name_dns_aaaa_record_on_launch
+  ipv6_native                            = each.value.ipv6_native
+
+  # Comprehensive tagging
+  tags = merge(
     {
-      Name =  format("%s", "${var.subnet_name_prefix}${each.key}") // format("%s", each.key)
-    }
+      Name = "${var.subnet_name_prefix}${each.key}"
+      Type = "Subnet"
+      VPC  = data.aws_vpc.main.id
+      AZ   = each.value.az
+      CIDR = each.value.cidr
+    },
+    var.common_tags,
+    each.value.tags
   )
+
+  # Lifecycle management
+  lifecycle {
+    create_before_destroy = true
+  }
 }
-
-
-# resource "aws_route_table_association" "main" {
-#   for_each = var.subnets
-#   subnet_id = aws_subnet.main[each.key].id
-#   route_table_id = each.value.route_table_id
-# }
-
-output "subnet_ids" {
-
-   value = tomap({
-    for k, b in aws_subnet.main : k => b.id
-  })
-}
-
-
-# locals {
-#   subnets = {
-#     for i in var.subnets :
-#     i.index => i
-#   }
-# }
-
-# resource "aws_subnet" "main" {
-#   for_each = local.subnets
-#   vpc_id   = var.vpc_id 
-#   cidr_block = each.value.cidr_block
-#   availability_zone = each.value.availability_zone
-#   tags = merge(
-#     {
-#       "Name" = format("%s", each.value.name)
-#     }
-#   )
-
-# }
-
-# # resource "aws_route_table_association" "main" {
-# #   for_each = local.subnets
-# #   subnet_id = aws_subnet.main[each.key].id
-# #   route_table_id = each.value.route_table_id
-
-# #  // depends_on = [aws_subnet.main]
-# # }
-
-
-# output subnet_id {
-#    value = values(aws_subnet.main)[*].id
-# }
-
-
-
-
-
-
-
-
-
-
-
-
-# locals {
-#   subnets = {
-#     for i in var.subnets :
-#     i.name => i
-#   }
-# }
-
-# resource "aws_subnet" "main" {
-#   for_each = local.subnets
-#   vpc_id   = var.vpc_id
-#   cidr_block = each.value.cidr_block
-#   availability_zone = each.value.availability_zone
-#   tags = {
-#     Name = each.value.name
-#   }
-
-# }
-
-
-
-# output subnet_id {
-#  //  value = [for v in aws_subnet.main : v.id]
-#  // value = toset([for v in aws_subnet.main : v.id])
-#   //value = tolist(var.subnets)[0]
-# //value = tolist(values(aws_subnet.main)[*].id)
-# //   value = values(aws_subnet.main)[*].id
-# }

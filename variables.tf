@@ -1,50 +1,162 @@
-variable "region" {}
+variable "region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-west-2"
+}
+
+variable "fw_prefix" {
+  description = "Prefix for firewall resources"
+  type        = string
+  default     = "swfw"
+}
 
 variable "key_name" {
-  description = "Name of an existing EC2 Key Pair"
+  description = "EC2 Key Pair name"
+  type        = string
+  default     = "gwlb-us"
 }
 
-variable "your_public_ip" {
-  description = "Enter your public IP address.  This IP is used to create a host route on Spoke2 for SSH jump access"
-}
-variable "fw_license" {
-  description = "Firewall license.  Must be byol, bundle1, or bundle2"
-}
-
-variable "fw_prefix" {}
-variable "fw_vpc_cidr" {}
-variable "fw_count_az1" {}
-variable "fw_count_az2" {}
-variable "fw_size" {}
-variable "fw_panos" {}
 variable "fw_mgmt_src_cidrs" {
+  description = "CIDR blocks for firewall management access"
   type        = list(string)
+  default     = ["98.97.0.0/16"]
 }
 
-variable "fw_cidr_mgmt_az1" {}
-variable "fw_cidr_mgmt_az2" {}
-variable "fw_cidr_trust_az1" {}
-variable "fw_cidr_trust_az2" {}
-variable "fw_cidr_untrust_az1" {}
-variable "fw_cidr_untrust_az2" {}
-variable "fw_cidr_gwlbe_az1" {}
-variable "fw_cidr_gwlbe_az2" {}
-variable "fw_cidr_tgw_az1" {}
-variable "fw_cidr_tgw_az2" {}
+variable "panos" {
+  description = "PAN-OS version"
+  type        = string
+  default     = "11.1.6"
+}
 
-variable "spoke1_prefix" {}
-variable "spoke1_vpc_cidr" {}
-variable "spoke1_cidr_vm_az1" {}
-variable "spoke1_cidr_vm_az2" {}
-variable "spoke1_cidr_alb_az1" {}
-variable "spoke1_cidr_alb_az2" {}
-variable "spoke1_cidr_gwlbe_az1" {}
-variable "spoke1_cidr_gwlbe_az2" {}
-variable "spoke1_vm1_ip" {}
-variable "spoke1_vm2_ip" {}
+variable "fw_instance_type" {
+  description = "VM-Series instance type"
+  type        = string
+  default     = "c6in.xlarge"
+}
 
-variable "spoke2_prefix" {}
-variable "spoke2_vpc_cidr" {}
-variable "spoke2_subnet_cidr" {}
-variable "spoke2_vm1_ip" {}
-variable "spoke_size" {}
+# Inspection VPC
+variable "inspection_cidr" {
+  description = "CIDR block for inspection VPC"
+  type        = string
+  default     = "10.210.0.0/16"
+}
+
+variable "inspection_cidr_mgmt_az1" {
+  description = "CIDR for inspection VPC management subnet AZ1"
+  type        = string
+  default     = "10.210.0.0/28"
+}
+
+variable "inspection_cidr_mgmt_az2" {
+  description = "CIDR for inspection VPC management subnet AZ2"
+  type        = string
+  default     = "10.210.0.16/28"
+}
+
+variable "inspection_cidr_public_az1" {
+  description = "CIDR for inspection VPC public subnet AZ1"
+  type        = string
+  default     = "10.210.1.0/28"
+}
+
+variable "inspection_cidr_public_az2" {
+  description = "CIDR for inspection VPC public subnet AZ2"
+  type        = string
+  default     = "10.210.1.16/28"
+}
+
+variable "inspection_cidr_private_az1" {
+  description = "CIDR for inspection VPC private subnet AZ1"
+  type        = string
+  default     = "10.210.2.0/28"
+}
+
+variable "inspection_cidr_private_az2" {
+  description = "CIDR for inspection VPC private subnet AZ2"
+  type        = string
+  default     = "10.210.2.16/28"
+}
+
+variable "inspection_cidr_gwlbe_az1" {
+  description = "CIDR for inspection VPC GWLB endpoint subnet AZ1"
+  type        = string
+  default     = "10.210.3.0/28"
+}
+
+variable "inspection_cidr_gwlbe_az2" {
+  description = "CIDR for inspection VPC GWLB endpoint subnet AZ2"
+  type        = string
+  default     = "10.210.3.16/28"
+}
+
+# SPK1 VPC
+variable "spk1_cidr" {
+  description = "CIDR block for spk1 VPC"
+  type        = string
+  default     = "10.211.0.0/16"
+}
+
+variable "spk1_cidr_vm_az1" {
+  description = "CIDR for spk1 VPC VM subnet AZ1"
+  type        = string
+  default     = "10.211.1.0/24"
+}
+
+variable "spk1_cidr_vm_az2" {
+  description = "CIDR for spk1 VPC VM subnet AZ2"
+  type        = string
+  default     = "10.211.2.0/24"
+}
+
+variable "spk1_cidr_gwlbe_az1" {
+  description = "CIDR for spk1 VPC GWLB endpoint subnet AZ1"
+  type        = string
+  default     = "10.211.3.0/28"
+}
+
+variable "spk1_cidr_gwlbe_az2" {
+  description = "CIDR for spk1 VPC GWLB endpoint subnet AZ2"
+  type        = string
+  default     = "10.211.3.16/28"
+}
+
+# SPK2 VPC
+variable "spk2_cidr" {
+  description = "CIDR block for spk2 VPC"
+  type        = string
+  default     = "10.212.0.0/16"
+}
+
+variable "spk2_cidr_vm_az1" {
+  description = "CIDR for spk2 VPC VM subnet AZ1"
+  type        = string
+  default     = "10.212.1.0/24"
+}
+
+variable "spk2_cidr_vm_az2" {
+  description = "CIDR for spk2 VPC VM subnet AZ2"
+  type        = string
+  default     = "10.212.2.0/24"
+}
+
+variable "spk2_cidr_gwlbe_az1" {
+  description = "CIDR for spk2 VPC GWLB endpoint subnet AZ1"
+  type        = string
+  default     = "10.212.3.0/28"
+}
+
+variable "spk2_cidr_gwlbe_az2" {
+  description = "CIDR for spk2 VPC GWLB endpoint subnet AZ2"
+  type        = string
+  default     = "10.212.3.16/28"
+}
+
+variable "common_tags" {
+  description = "Common tags for all resources"
+  type        = map(string)
+  default = {
+    project = "swfw"
+    Environment = "demo"
+    ManagedBy = "terraform"
+  }
+}

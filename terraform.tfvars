@@ -1,44 +1,68 @@
-region   = "us-east-2"
-key_name = "pan-lab-mharms" // EC2 Key Pair for VMs.  Must exist prior to launch.
-your_public_ip = "108.76.182.46" // Used to get jump access to spoke2 VM for testing.
+# =============================================================================
+# GENERAL CONFIGURATION
+# =============================================================================
+
+region         = "us-east-2"
+key_name       = "gwlb-us"               # EC2 Key Pair - Must exist prior to launch
+your_public_ip = "98.97.0.0/16"         # Management access CIDR (broad range as requested)
+
+# =============================================================================
+# VM-SERIES FIREWALL CONFIGURATION
+# =============================================================================
+
 fw_license           = "byol"
-#fw_license           = "bundle1"
-#fw_license            = "bundle2"
+# fw_license         = "bundle1"
+# fw_license         = "bundle2"
 
-fw_panos              = "10.2.2-h2" // Must be 10.0 or greater. 
-fw_prefix             = "vmseries"
-fw_count_az1          = 1
-fw_count_az2          = 1
-fw_size               = "m5.large"
-fw_mgmt_src_cidrs     = ["0.0.0.0/0"]
+fw_panos             = "11.1.6"          # Updated PAN-OS version
+fw_prefix            = "swfw"            # Project-specific prefix
+fw_count_az1         = 1
+fw_count_az2         = 1
+fw_size              = "c6in.xlarge"     # Updated instance type
+fw_mgmt_src_cidrs    = ["98.97.0.0/16"]  # Management access from your network
 
-fw_vpc_cidr           = "10.0.0.0/16"
-fw_cidr_mgmt_az1      = "10.0.0.0/28"
-fw_cidr_mgmt_az2      = "10.0.0.16/28"
-fw_cidr_trust_az1     = "10.0.1.0/28"
-fw_cidr_trust_az2     = "10.0.1.16/28"
-fw_cidr_untrust_az1   = "10.0.2.0/28"
-fw_cidr_untrust_az2   = "10.0.2.16/28"
-fw_cidr_gwlbe_az1     = "10.0.3.0/28"
-fw_cidr_gwlbe_az2     = "10.0.3.16/28"
-fw_cidr_tgw_az1       = "10.0.4.0/28"
-fw_cidr_tgw_az2       = "10.0.4.16/28"
+# =============================================================================
+# INSPECTION VPC CONFIGURATION (previously Security VPC)
+# =============================================================================
 
-spoke1_prefix         = "spoke1"
-spoke1_vpc_cidr       = "10.1.0.0/16"
-spoke1_cidr_vm_az1    = "10.1.0.0/28"
-spoke1_cidr_vm_az2    = "10.1.0.16/28"
-spoke1_cidr_alb_az1   = "10.1.1.0/28"
-spoke1_cidr_alb_az2   = "10.1.1.16/28"
-spoke1_cidr_gwlbe_az1 = "10.1.2.0/28"
-spoke1_cidr_gwlbe_az2 = "10.1.2.16/28"
-spoke1_vm1_ip         = "10.1.0.4"
-spoke1_vm2_ip         = "10.1.0.20"
+fw_vpc_cidr           = "10.210.0.0/16"   # Inspection VPC CIDR
+fw_cidr_mgmt_az1      = "10.210.0.0/28"
+fw_cidr_mgmt_az2      = "10.210.0.16/28"
+fw_cidr_trust_az1     = "10.210.1.0/28"
+fw_cidr_trust_az2     = "10.210.1.16/28"
+fw_cidr_untrust_az1   = "10.210.2.0/28"
+fw_cidr_untrust_az2   = "10.210.2.16/28"
+fw_cidr_gwlbe_az1     = "10.210.3.0/28"
+fw_cidr_gwlbe_az2     = "10.210.3.16/28"
+fw_cidr_tgw_az1       = "10.210.4.0/28"
+fw_cidr_tgw_az2       = "10.210.4.16/28"
 
-spoke2_prefix         = "spoke2"
-spoke2_vpc_cidr       = "10.2.0.0/16"
-spoke2_subnet_cidr    = "10.2.0.0/24"
-spoke2_vm1_ip         = "10.2.0.4"
-spoke_size            = "t2.micro"
+# =============================================================================
+# SPK1 VPC CONFIGURATION (previously Spoke1)
+# =============================================================================
 
+spk1_prefix           = "spk1"
+spk1_vpc_cidr         = "10.211.0.0/16"   # Spk1 VPC CIDR
+spk1_cidr_vm_az1      = "10.211.0.0/28"
+spk1_cidr_vm_az2      = "10.211.0.16/28"
+spk1_cidr_alb_az1     = "10.211.1.0/28"
+spk1_cidr_alb_az2     = "10.211.1.16/28"
+spk1_cidr_gwlbe_az1   = "10.211.2.0/28"
+spk1_cidr_gwlbe_az2   = "10.211.2.16/28"
+spk1_vm1_ip           = "10.211.0.4"
+spk1_vm2_ip           = "10.211.0.20"
 
+# =============================================================================
+# SPK2 VPC CONFIGURATION (previously Spoke2)
+# =============================================================================
+
+spk2_prefix           = "spk2"
+spk2_vpc_cidr         = "10.212.0.0/16"   # Spk2 VPC CIDR
+spk2_subnet_cidr      = "10.212.0.0/24"
+spk2_vm1_ip           = "10.212.0.4"
+
+# =============================================================================
+# INSTANCE CONFIGURATION
+# =============================================================================
+
+spoke_size            = "t3.micro"        # Updated from t2.micro (t3 is newer generation)

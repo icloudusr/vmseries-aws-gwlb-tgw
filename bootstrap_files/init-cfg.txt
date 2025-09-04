@@ -1,10 +1,50 @@
+# =============================================================================
+# VM-SERIES INIT-CFG.TXT - ENHANCED FOR PAN-OS 11.1.6
+# =============================================================================
+
+# Network Configuration - Management Interface
 type=dhcp-client
 ip-address=
 default-gateway=
 netmask=
 ipv6-address=
 ipv6-default-gateway=
+
+# DNS Configuration
 dhcp-accept-server-hostname=yes
 dns-primary=8.8.8.8
 dns-secondary=4.2.2.2
+
+# AWS GWLB Plugin Commands - Critical for GWLB functionality
 plugin-op-commands=aws-gwlb-inspect:enable,aws-gwlb-overlay-routing:enable
+
+# =============================================================================
+# OPTIONAL: Enhanced Settings for Modern Deployments
+# =============================================================================
+
+# Enable FIPS Mode (uncomment if required for compliance)
+# fips-mode=enable
+
+# Panorama Configuration (if using Panorama)
+# panorama-server=YOUR_PANORAMA_IP
+# dgname=swfw
+# tplname=swfw_stack
+# vm-auth-key=YOUR_VM_AUTH_KEY
+
+# Additional Security Settings
+# auth-key=YOUR_AUTH_KEY
+# op-command-modes=mgmt-interface-swap
+
+# Performance Optimization
+# speedtest=yes
+
+# Logging Enhancement
+# log-export-buffer-size=1024
+
+# =============================================================================
+# NOTES:
+# - This config enables DHCP on management interface
+# - AWS GWLB plugins are enabled for proper GENEVE handling
+# - DNS servers are set to Google's reliable servers
+# - Additional options are commented for reference
+# =============================================================================

@@ -1,14 +1,35 @@
+# =============================================================================
+# GATEWAY LOAD BALANCER CONFIGURATION
+# =============================================================================
+
 locals {
   gwlb_name = "${var.fw_prefix}-gwlb"
 }
+
+# =============================================================================
+# GATEWAY LOAD BALANCER
+# =============================================================================
 
 resource "aws_lb" "gwlb" {
   name               = local.gwlb_name
   internal           = false
   load_balancer_type = "gateway"
-  subnets            = [module.vmseries_subnets.subnet_ids["gwlbe-az1"], module.vmseries_subnets.subnet_ids["gwlbe-az2"]]
-  enable_cross_zone_load_balancing = true 
+  
+  subnets = [
+    module.vmseries_subnets.subnet_ids["gwlbe-az1"], 
+    module.vmseries_subnets.subnet_ids["gwlbe-az2"]
+  ]
+  
+  enable_cross_zone_load_balancing = true
+
+  tags = {
+    Name = local.gwlb_name
+  }
 }
+
+# =============================================================================
+# GATEWAY LOAD BALANCER TARGET GROUP
+# =============================================================================
 
 resource "aws_lb_target_group" "gwlb" {
   name        = "${local.gwlb_name}-tg"
@@ -16,7 +37,25 @@ resource "aws_lb_target_group" "gwlb" {
   protocol    = "GENEVE"
   target_type = "instance"
   vpc_id      = aws_vpc.security.id
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 5
+    interval            = 10
+    port                = "traffic-port"
+    protocol            = "TCP"
+  }
+
+  tags = {
+    Name = "${local.gwlb_name}-tg"
+  }
 }
+
+# =============================================================================
+# TARGET GROUP ATTACHMENTS
+# =============================================================================
 
 resource "aws_lb_target_group_attachment" "az1" {
   count            = var.fw_count_az1
@@ -32,15 +71,43 @@ resource "aws_lb_target_group_attachment" "az2" {
   port             = 6081
 }
 
+# =============================================================================
+# GATEWAY LOAD BALANCER LISTENER
+# =============================================================================
+
+resource "aws_lb_listener" "gwlb" {
+  load_balancer_arn = aws_lb.gwlb.id
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.gwlb.id
+  }
+
+  tags = {
+    Name = "${local.gwlb_name}-listener"
+  }
+}
+
+# =============================================================================
+# VPC ENDPOINT SERVICE
+# =============================================================================
 
 resource "aws_vpc_endpoint_service" "gwlb" {
   acceptance_required        = false
   gateway_load_balancer_arns = [aws_lb.gwlb.arn]
+  
+  allowed_principals = [
+    data.aws_caller_identity.current.arn
+  ]
 
   tags = {
     Name = "${local.gwlb_name}-endpoint-service"
   }
 }
+
+# =============================================================================
+# SECURITY VPC ENDPOINT CONNECTIONS
+# =============================================================================
 
 resource "aws_vpc_endpoint" "az1" {
   service_name      = aws_vpc_endpoint_service.gwlb.service_name
@@ -64,11 +131,34 @@ resource "aws_vpc_endpoint" "az2" {
   }
 }
 
-resource "aws_lb_listener" "gwlb" {
-  load_balancer_arn = aws_lb.gwlb.id
+# =============================================================================
+# OUTPUTS
+# =============================================================================
 
-  default_action {
-    target_group_arn = aws_lb_target_group.gwlb.id
-    type             = "forward"
+output "gwlb_arn" {
+  description = "Gateway Load Balancer ARN"
+  value       = aws_lb.gwlb.arn
+}
+
+output "gwlb_dns_name" {
+  description = "Gateway Load Balancer DNS name"
+  value       = aws_lb.gwlb.dns_name
+}
+
+output "gwlb_endpoint_service_name" {
+  description = "GWLB endpoint service name for sharing with other accounts"
+  value       = aws_vpc_endpoint_service.gwlb.service_name
+}
+
+output "gwlb_target_group_arn" {
+  description = "Gateway Load Balancer target group ARN"
+  value       = aws_lb_target_group.gwlb.arn
+}
+
+output "inspection_vpc_endpoint_ids" {
+  description = "Inspection VPC endpoint IDs"
+  value = {
+    az1 = aws_vpc_endpoint.az1.id
+    az2 = aws_vpc_endpoint.az2.id
   }
 }
