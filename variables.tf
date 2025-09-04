@@ -1,7 +1,7 @@
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = "us-west-2"
+  default     = "us-west-1"
 }
 
 variable "fw_prefix" {
@@ -26,6 +26,48 @@ variable "panos" {
   description = "PAN-OS version"
   type        = string
   default     = "11.1.6"
+}
+
+variable "fw_license" { 
+  description = "FW License Type"
+  type        = string
+  default = "byol" 
+}
+
+variable "fw_panos" {
+  description = "PANOS Version"
+  type        = string 
+  default = "11.1.6" 
+}
+
+variable "fw_size" {
+  description = "Instance Size"
+  type        = string 
+  default = "c6in.xlarge" 
+}
+
+variable "fw_count_az1" {
+  description = "FW Count for AZ1"
+  type        = string
+  default = 1 
+}
+
+variable "fw_count_az2" {
+  description = "FW Count for AZ2"
+  type        = string 
+  default = 1 
+}
+
+variable "your_public_ip" {
+  description = "my publiocv IP range"
+  type        = string 
+  default = "98.97.0.0/16" 
+}
+
+variable "spoke_size" {
+  description = "spoke instance size"
+  type        = string 
+  default = "t3.micro" 
 }
 
 variable "fw_instance_type" {

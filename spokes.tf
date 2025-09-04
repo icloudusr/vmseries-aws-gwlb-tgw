@@ -563,123 +563,123 @@ resource "aws_vpc_endpoint" "spk1_az2" {
 }
 
 # =============================================================================
-# SPOKE1 ROUTE TABLES AND ASSOCIATIONS
+# SPK1 ROUTE TABLES AND ASSOCIATIONS
 # =============================================================================
 
-resource "aws_route_table" "spoke1_vm" {
-  vpc_id = aws_vpc.spoke1.id
+resource "aws_route_table" "spk1_vm" {
+  vpc_id = aws_vpc.spk1.id
 
   route {
     cidr_block         = "0.0.0.0/0"
-    transit_gateway_id = aws_ec2_transit_gateway_vpc_attachment.spoke1_attachment.transit_gateway_id
+    transit_gateway_id = aws_ec2_transit_gateway_vpc_attachment.spk1_attachment.transit_gateway_id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-vm-rtb"
+    Name = "${var.spk1_prefix}-vm-rtb"
   }
 }
 
-resource "aws_route_table" "spoke1_alb_az1" {
-  vpc_id = aws_vpc.spoke1.id
+resource "aws_route_table" "spk1_alb_az1" {
+  vpc_id = aws_vpc.spk1.id
 
   route {
     cidr_block      = "0.0.0.0/0"
-    vpc_endpoint_id = aws_vpc_endpoint.spoke1_az1.id
+    vpc_endpoint_id = aws_vpc_endpoint.spk1_az1.id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-alb-az1-rtb"
+    Name = "${var.spk1_prefix}-alb-az1-rtb"
   }
 }
 
-resource "aws_route_table" "spoke1_alb_az2" {
-  vpc_id = aws_vpc.spoke1.id
+resource "aws_route_table" "spk1_alb_az2" {
+  vpc_id = aws_vpc.spk1.id
 
   route {
     cidr_block      = "0.0.0.0/0"
-    vpc_endpoint_id = aws_vpc_endpoint.spoke1_az2.id
+    vpc_endpoint_id = aws_vpc_endpoint.spk1_az2.id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-alb-az2-rtb"
+    Name = "${var.spk1_prefix}-alb-az2-rtb"
   }
 }
 
-resource "aws_route_table" "spoke1_gwlbe" {
-  vpc_id = aws_vpc.spoke1.id
+resource "aws_route_table" "spk1_gwlbe" {
+  vpc_id = aws_vpc.spk1.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.spoke1.id
+    gateway_id = aws_internet_gateway.spk1.id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-gwlbe-rtb"
+    Name = "${var.spk1_prefix}-gwlbe-rtb"
   }
 }
 
-resource "aws_route_table" "spoke1_igw" {
-  vpc_id = aws_vpc.spoke1.id
+resource "aws_route_table" "spk1_igw" {
+  vpc_id = aws_vpc.spk1.id
 
   route {
-    cidr_block      = var.spoke1_cidr_alb_az1
-    vpc_endpoint_id = aws_vpc_endpoint.spoke1_az1.id
+    cidr_block      = var.spk1_cidr_alb_az1
+    vpc_endpoint_id = aws_vpc_endpoint.spk1_az1.id
   }
 
   route {
-    cidr_block      = var.spoke1_cidr_alb_az2
-    vpc_endpoint_id = aws_vpc_endpoint.spoke1_az2.id
+    cidr_block      = var.spk1_cidr_alb_az2
+    vpc_endpoint_id = aws_vpc_endpoint.spk1_az2.id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-igw-rtb"
+    Name = "${var.spk1_prefix}-igw-rtb"
   }
 }
 
 # Route table associations
-resource "aws_route_table_association" "spoke1_vm_az1" {
-  subnet_id      = module.spoke1_subnets.subnet_ids["vm-az1"]
-  route_table_id = aws_route_table.spoke1_vm.id
+resource "aws_route_table_association" "spk1_vm_az1" {
+  subnet_id      = module.spk1_subnets.subnet_ids["vm-az1"]
+  route_table_id = aws_route_table.spk1_vm.id
 }
 
-resource "aws_route_table_association" "spoke1_vm_az2" {
-  subnet_id      = module.spoke1_subnets.subnet_ids["vm-az2"]
-  route_table_id = aws_route_table.spoke1_vm.id
+resource "aws_route_table_association" "spk1_vm_az2" {
+  subnet_id      = module.spk1_subnets.subnet_ids["vm-az2"]
+  route_table_id = aws_route_table.spk1_vm.id
 }
 
-resource "aws_route_table_association" "spoke1_alb_az1" {
-  subnet_id      = module.spoke1_subnets.subnet_ids["alb-az1"]
-  route_table_id = aws_route_table.spoke1_alb_az1.id
+resource "aws_route_table_association" "spk1_alb_az1" {
+  subnet_id      = module.spk1_subnets.subnet_ids["alb-az1"]
+  route_table_id = aws_route_table.spk1_alb_az1.id
 }
 
-resource "aws_route_table_association" "spoke1_alb_az2" {
-  subnet_id      = module.spoke1_subnets.subnet_ids["alb-az2"]
-  route_table_id = aws_route_table.spoke1_alb_az2.id
+resource "aws_route_table_association" "spk1_alb_az2" {
+  subnet_id      = module.spk1_subnets.subnet_ids["alb-az2"]
+  route_table_id = aws_route_table.spk1_alb_az2.id
 }
 
-resource "aws_route_table_association" "spoke1_gwlb_az1" {
-  subnet_id      = module.spoke1_subnets.subnet_ids["gwlbe-az1"]
-  route_table_id = aws_route_table.spoke1_gwlbe.id
+resource "aws_route_table_association" "spk1_gwlb_az1" {
+  subnet_id      = module.spk1_subnets.subnet_ids["gwlbe-az1"]
+  route_table_id = aws_route_table.spk1_gwlbe.id
 }
 
-resource "aws_route_table_association" "spoke1_gwlb_az2" {
-  subnet_id      = module.spoke1_subnets.subnet_ids["gwlbe-az2"]
-  route_table_id = aws_route_table.spoke1_gwlbe.id
+resource "aws_route_table_association" "spk1_gwlb_az2" {
+  subnet_id      = module.spk1_subnets.subnet_ids["gwlbe-az2"]
+  route_table_id = aws_route_table.spk1_gwlbe.id
 }
 
-resource "aws_route_table_association" "spoke1_igw" {
-  gateway_id     = aws_internet_gateway.spoke1.id
-  route_table_id = aws_route_table.spoke1_igw.id
+resource "aws_route_table_association" "spk1_igw" {
+  gateway_id     = aws_internet_gateway.spk1.id
+  route_table_id = aws_route_table.spk1_igw.id
 }
 
 # =============================================================================
-# SPOKE1 SECURITY GROUP
+# SPK1 SECURITY GROUP
 # =============================================================================
 
-resource "aws_security_group" "spoke1_sg" {
-  name_prefix = "${var.spoke1_prefix}-sg-"
-  description = "Security group for ${var.spoke1_prefix} resources"
-  vpc_id      = aws_vpc.spoke1.id
+resource "aws_security_group" "spk1_sg" {
+  name_prefix = "${var.spk1_prefix}-sg-"
+  description = "Security group for ${var.spk1_prefix} resources"
+  vpc_id      = aws_vpc.spk1.id
 
   ingress {
     description = "Allow all inbound traffic for demo"
@@ -698,37 +698,37 @@ resource "aws_security_group" "spoke1_sg" {
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-sg"
+    Name = "${var.spk1_prefix}-sg"
   }
 }
 
 # =============================================================================
-# SPOKE1 EC2 INSTANCES AND LOAD BALANCER
+# SPK1 EC2 INSTANCES AND LOAD BALANCER
 # =============================================================================
 
-resource "aws_network_interface" "spoke1_vm1" {
-  subnet_id         = module.spoke1_subnets.subnet_ids["vm-az1"]
-  security_groups   = [aws_security_group.spoke1_sg.id]
+resource "aws_network_interface" "spk1_vm1" {
+  subnet_id         = module.spk1_subnets.subnet_ids["vm-az1"]
+  security_groups   = [aws_security_group.spk1_sg.id]
   source_dest_check = false
-  private_ips       = [var.spoke1_vm1_ip]
+  private_ips       = [var.spk1_vm1_ip]
 
   tags = {
-    Name = "${var.spoke1_prefix}-vm1-eni0"
+    Name = "${var.spk1_prefix}-vm1-eni0"
   }
 }
 
-resource "aws_network_interface" "spoke1_vm2" {
-  subnet_id         = module.spoke1_subnets.subnet_ids["vm-az2"]
-  security_groups   = [aws_security_group.spoke1_sg.id]
+resource "aws_network_interface" "spk1_vm2" {
+  subnet_id         = module.spk1_subnets.subnet_ids["vm-az2"]
+  security_groups   = [aws_security_group.spk1_sg.id]
   source_dest_check = false
-  private_ips       = [var.spoke1_vm2_ip]
+  private_ips       = [var.spk1_vm2_ip]
 
   tags = {
-    Name = "${var.spoke1_prefix}-vm2-eni0"
+    Name = "${var.spk1_prefix}-vm2-eni0"
   }
 }
 
-resource "aws_instance" "spoke1_vm1" {
+resource "aws_instance" "spk1_vm1" {
   disable_api_termination = false
   ami                     = data.aws_ami.ubuntu.id
   instance_type           = var.spoke_size
@@ -742,15 +742,15 @@ resource "aws_instance" "spoke1_vm1" {
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.spoke1_vm1.id
+    network_interface_id = aws_network_interface.spk1_vm1.id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-vm1"
+    Name = "${var.spk1_prefix}-vm1"
   }
 }
 
-resource "aws_instance" "spoke1_vm2" {
+resource "aws_instance" "spk1_vm2" {
   disable_api_termination = false
   ami                     = data.aws_ami.ubuntu.id
   instance_type           = var.spoke_size
@@ -764,42 +764,42 @@ resource "aws_instance" "spoke1_vm2" {
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.spoke1_vm2.id
+    network_interface_id = aws_network_interface.spk1_vm2.id
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-vm2"
+    Name = "${var.spk1_prefix}-vm2"
   }
 }
 
 # =============================================================================
-# SPOKE1 APPLICATION LOAD BALANCER
+# SPK1 APPLICATION LOAD BALANCER
 # =============================================================================
 
-resource "aws_lb" "spoke1" {
-  name               = "${var.spoke1_prefix}-alb"
+resource "aws_lb" "spk1" {
+  name               = "${var.spk1_prefix}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.spoke1_sg.id]
+  security_groups    = [aws_security_group.spk1_sg.id]
   
   subnets = [
-    module.spoke1_subnets.subnet_ids["alb-az1"],
-    module.spoke1_subnets.subnet_ids["alb-az2"]
+    module.spk1_subnets.subnet_ids["alb-az1"],
+    module.spk1_subnets.subnet_ids["alb-az2"]
   ]
 
   enable_deletion_protection = false
 
   tags = {
-    Name = "${var.spoke1_prefix}-alb"
+    Name = "${var.spk1_prefix}-alb"
   }
 }
 
-resource "aws_lb_target_group" "spoke1" {
-  name        = "${var.spoke1_prefix}-tg"
+resource "aws_lb_target_group" "spk1" {
+  name        = "${var.spk1_prefix}-tg"
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_vpc.spoke1.id
+  vpc_id      = aws_vpc.spk1.id
 
   health_check {
     enabled             = true
@@ -814,25 +814,25 @@ resource "aws_lb_target_group" "spoke1" {
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-tg"
+    Name = "${var.spk1_prefix}-tg"
   }
 }
 
-resource "aws_lb_target_group_attachment" "spoke1_vm1" {
-  target_group_arn = aws_lb_target_group.spoke1.arn
-  target_id        = var.spoke1_vm1_ip
+resource "aws_lb_target_group_attachment" "spk1_vm1" {
+  target_group_arn = aws_lb_target_group.spk1.arn
+  target_id        = var.spk1_vm1_ip
   port             = 80
 }
 
-resource "aws_lb_target_group_attachment" "spoke1_vm2" {
-  target_group_arn = aws_lb_target_group.spoke1.arn
-  target_id        = var.spoke1_vm2_ip
+resource "aws_lb_target_group_attachment" "spk1_vm2" {
+  target_group_arn = aws_lb_target_group.spk1.arn
+  target_id        = var.spk1_vm2_ip
   port             = 80
 }
 
 # ✅ MODERNIZED ALB LISTENER - Fixed deprecated syntax
-resource "aws_lb_listener" "spoke1" {
-  load_balancer_arn = aws_lb.spoke1.arn
+resource "aws_lb_listener" "spk1" {
+  load_balancer_arn = aws_lb.spk1.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -840,84 +840,84 @@ resource "aws_lb_listener" "spoke1" {
     type = "forward"
     forward {
       target_group {
-        arn    = aws_lb_target_group.spoke1.arn
+        arn    = aws_lb_target_group.spk1.arn
         weight = 100
       }
     }
   }
 
   tags = {
-    Name = "${var.spoke1_prefix}-listener"
+    Name = "${var.spk1_prefix}-listener"
   }
 }
 
 # =============================================================================
-# SPOKE2 VPC AND NETWORKING
+# SPK2 VPC AND NETWORKING
 # =============================================================================
 
-resource "aws_vpc" "spoke2" {
-  cidr_block           = var.spoke2_vpc_cidr
+resource "aws_vpc" "spk2" {
+  cidr_block           = var.spk2_vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
   tags = {
-    Name = "${var.spoke2_prefix}-vpc"
+    Name = "${var.spk2_prefix}-vpc"
   }
 }
 
-resource "aws_internet_gateway" "spoke2" {
-  vpc_id = aws_vpc.spoke2.id
+resource "aws_internet_gateway" "spk2" {
+  vpc_id = aws_vpc.spk2.id
 
   tags = {
-    Name = "${var.spoke2_prefix}-igw"
+    Name = "${var.spk2_prefix}-igw"
   }
 }
 
-resource "aws_subnet" "spoke2" {
-  vpc_id            = aws_vpc.spoke2.id
-  cidr_block        = var.spoke2_subnet_cidr
+resource "aws_subnet" "spk2" {
+  vpc_id            = aws_vpc.spk2.id
+  cidr_block        = var.spk2_subnet_cidr
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "${var.spoke2_prefix}-vm-az1"
+    Name = "${var.spk2_prefix}-vm-az1"
   }
 }
 
 # =============================================================================
-# SPOKE2 ROUTING
+# SPK2 ROUTING
 # =============================================================================
 
-resource "aws_route_table" "spoke2" {
-  vpc_id = aws_vpc.spoke2.id
+resource "aws_route_table" "spk2" {
+  vpc_id = aws_vpc.spk2.id
 
   route {
     cidr_block         = "0.0.0.0/0"
-    transit_gateway_id = aws_ec2_transit_gateway_vpc_attachment.spoke2_attachment.transit_gateway_id
+    transit_gateway_id = aws_ec2_transit_gateway_vpc_attachment.spk2_attachment.transit_gateway_id
   }
 
   route {
     cidr_block = var.your_public_ip
-    gateway_id = aws_internet_gateway.spoke2.id
+    gateway_id = aws_internet_gateway.spk2.id
   }
 
   tags = {
-    Name = "${var.spoke2_prefix}-rtb"
+    Name = "${var.spk2_prefix}-rtb"
   }
 }
 
-resource "aws_route_table_association" "spoke2" {
-  subnet_id      = aws_subnet.spoke2.id
-  route_table_id = aws_route_table.spoke2.id
+resource "aws_route_table_association" "spk2" {
+  subnet_id      = aws_subnet.spk2.id
+  route_table_id = aws_route_table.spk2.id
 }
 
 # =============================================================================
-# SPOKE2 SECURITY GROUP AND INSTANCE
+# SPK2 SECURITY GROUP AND INSTANCE
 # =============================================================================
 
-resource "aws_security_group" "spoke2_sg" {
-  name_prefix = "${var.spoke2_prefix}-sg-"
-  description = "Security group for ${var.spoke2_prefix} resources"
-  vpc_id      = aws_vpc.spoke2.id
+resource "aws_security_group" "spk2_sg" {
+  name_prefix = "${var.spk2_prefix}-sg-"
+  description = "Security group for ${var.spk2_prefix} resources"
+  vpc_id      = aws_vpc.spk2.id
 
   ingress {
     description = "Allow all inbound traffic for demo"
@@ -936,33 +936,33 @@ resource "aws_security_group" "spoke2_sg" {
   }
 
   tags = {
-    Name = "${var.spoke2_prefix}-sg"
+    Name = "${var.spk2_prefix}-sg"
   }
 }
 
-resource "aws_network_interface" "spoke2_vm1" {
-  subnet_id         = aws_subnet.spoke2.id
-  security_groups   = [aws_security_group.spoke2_sg.id]
+resource "aws_network_interface" "spk2_vm1" {
+  subnet_id         = aws_subnet.spk2.id
+  security_groups   = [aws_security_group.spk2_sg.id]
   source_dest_check = false
-  private_ips       = [var.spoke2_vm1_ip]
+  private_ips       = [var.spk2_vm1_ip]
 
   tags = {
-    Name = "${var.spoke2_prefix}-vm1-eni0"
+    Name = "${var.spk2_prefix}-vm1-eni0"
   }
 }
 
-resource "aws_eip" "spoke2_vm1" {
+resource "aws_eip" "spk2_vm1" {
   domain                    = "vpc"
-  network_interface         = aws_network_interface.spoke2_vm1.id
+  network_interface         = aws_network_interface.spk2_vm1.id
 
   tags = {
-    Name = "${var.spoke2_prefix}-vm1-eip"
+    Name = "${var.spk2_prefix}-vm1-eip"
   }
 
-  depends_on = [aws_internet_gateway.spoke2]
+  depends_on = [aws_internet_gateway.spk2]
 }
 
-resource "aws_instance" "spoke2_vm1" {
+resource "aws_instance" "spk2_vm1" {
   disable_api_termination = false
   ami                     = data.aws_ami.ubuntu.id
   instance_type           = var.spoke_size
@@ -975,50 +975,50 @@ resource "aws_instance" "spoke2_vm1" {
 
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.spoke2_vm1.id
+    network_interface_id = aws_network_interface.spk2_vm1.id
   }
 
   tags = {
-    Name = "${var.spoke2_prefix}-vm1"
+    Name = "${var.spk2_prefix}-vm1"
   }
 
-  depends_on = [aws_eip.spoke2_vm1]
+  depends_on = [aws_eip.spk2_vm1]
 }
 
 # =============================================================================
 # OUTPUTS - ENHANCED FORMAT
 # =============================================================================
 
-output "spoke1_alb_url" {
-  description = "Spoke1 Application Load Balancer URL"
-  value       = "http://${aws_lb.spoke1.dns_name}"
+output "spk1_alb_url" {
+  description = "Spk1 Application Load Balancer URL"
+  value       = "http://${aws_lb.spk1.dns_name}"
 }
 
-output "spoke2_ssh_access" {
-  description = "SSH command to access Spoke2 jump host"
-  value       = "ssh ubuntu@${aws_eip.spoke2_vm1.public_ip} -i ~/.ssh/${var.key_name}.pem"
+output "spk2_ssh_access" {
+  description = "SSH command to access Spk2 jump host"
+  value       = "ssh ubuntu@${aws_eip.spk2_vm1.public_ip} -i ~/.ssh/${var.key_name}.pem"
 }
 
-output "spoke2_public_ip" {
-  description = "Spoke2 VM1 public IP address"
-  value       = aws_eip.spoke2_vm1.public_ip
+output "spk2_public_ip" {
+  description = "Spk2 VM1 public IP address"
+  value       = aws_eip.spk2_vm1.public_ip
 }
 
 output "spoke_instance_details" {
   description = "Spoke VM instance details"
   value = {
-    spoke1_vm1 = {
-      id         = aws_instance.spoke1_vm1.id
-      private_ip = aws_instance.spoke1_vm1.private_ip
+    spk1_vm1 = {
+      id         = aws_instance.spk1_vm1.id
+      private_ip = aws_instance.spk1_vm1.private_ip
     }
-    spoke1_vm2 = {
-      id         = aws_instance.spoke1_vm2.id
-      private_ip = aws_instance.spoke1_vm2.private_ip
+    spk1_vm2 = {
+      id         = aws_instance.spk1_vm2.id
+      private_ip = aws_instance.spk1_vm2.private_ip
     }
-    spoke2_vm1 = {
-      id         = aws_instance.spoke2_vm1.id
-      private_ip = aws_instance.spoke2_vm1.private_ip
-      public_ip  = aws_eip.spoke2_vm1.public_ip
+    spk2_vm1 = {
+      id         = aws_instance.spk2_vm1.id
+      private_ip = aws_instance.spk2_vm1.private_ip
+      public_ip  = aws_eip.spk2_vm1.public_ip
     }
   }
 }

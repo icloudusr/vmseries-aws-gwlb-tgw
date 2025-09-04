@@ -37,15 +37,15 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "main" {
 }
 
 # =============================================================================
-# SPOKE1 VPC ATTACHMENT
+# SPK1 VPC ATTACHMENT
 # =============================================================================
 
-resource "aws_ec2_transit_gateway_vpc_attachment" "spoke1_attachment" {
-  vpc_id = aws_vpc.spoke1.id
+resource "aws_ec2_transit_gateway_vpc_attachment" "spk1_attachment" {
+  vpc_id = aws_vpc.spk1.id
 
   subnet_ids = [
-    module.spoke1_subnets.subnet_ids["vm-az1"],
-    module.spoke1_subnets.subnet_ids["vm-az2"]
+    module.spk1_subnets.subnet_ids["vm-az1"],
+    module.spk1_subnets.subnet_ids["vm-az2"]
   ]
 
   transit_gateway_id                              = aws_ec2_transit_gateway.main.id
@@ -53,24 +53,24 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "spoke1_attachment" {
   transit_gateway_default_route_table_propagation = false
 
   tags = {
-    Name = "${var.spoke1_prefix}-attachment"
+    Name = "${var.spk1_prefix}-attachment"
   }
 }
 
 # =============================================================================
-# SPOKE2 VPC ATTACHMENT
+# SPK2 VPC ATTACHMENT
 # =============================================================================
 
-resource "aws_ec2_transit_gateway_vpc_attachment" "spoke2_attachment" {
-  vpc_id = aws_vpc.spoke2.id
+resource "aws_ec2_transit_gateway_vpc_attachment" "spk2_attachment" {
+  vpc_id = aws_vpc.spk2.id
 
-  subnet_ids                                      = [aws_subnet.spoke2.id]
+  subnet_ids                                      = [aws_subnet.spk2.id]
   transit_gateway_id                              = aws_ec2_transit_gateway.main.id
   transit_gateway_default_route_table_association = false
   transit_gateway_default_route_table_propagation = false
 
   tags = {
-    Name = "${var.spoke2_prefix}-attachment"
+    Name = "${var.spk2_prefix}-attachment"
   }
 }
 
@@ -91,47 +91,47 @@ resource "aws_ec2_transit_gateway_route_table_association" "fw_common" {
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.fw_common.id
 }
 
-# Routes for Security VPC to reach Spoke VPCs
-resource "aws_ec2_transit_gateway_route" "spoke1" {
-  destination_cidr_block         = var.spoke1_vpc_cidr
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spoke1_attachment.id
+# Routes for Security VPC to reach Spk VPCs
+resource "aws_ec2_transit_gateway_route" "spk1" {
+  destination_cidr_block         = var.spk1_vpc_cidr
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spk1_attachment.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.fw_common.id
 }
 
-resource "aws_ec2_transit_gateway_route" "spoke2" {
-  destination_cidr_block         = var.spoke2_vpc_cidr
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spoke2_attachment.id
+resource "aws_ec2_transit_gateway_route" "spk2" {
+  destination_cidr_block         = var.spk2_vpc_cidr
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spk2_attachment.id
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.fw_common.id
 }
 
 # =============================================================================
-# SPOKE ROUTE TABLE (Spoke VPCs Routes)
+# SPK ROUTE TABLE (Spk VPCs Routes)
 # =============================================================================
 
-resource "aws_ec2_transit_gateway_route_table" "spoke" {
+resource "aws_ec2_transit_gateway_route_table" "spk" {
   transit_gateway_id = aws_ec2_transit_gateway.main.id
 
   tags = {
-    Name = "spoke-tgw-rt"
+    Name = "spk-tgw-rt"
   }
 }
 
-# Default route for Spokes - all traffic goes to Security VPC
-resource "aws_ec2_transit_gateway_route" "spoke" {
+# Default route for Spks - all traffic goes to Security VPC
+resource "aws_ec2_transit_gateway_route" "spk" {
   destination_cidr_block         = "0.0.0.0/0"
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.main.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spk.id
 }
 
-# Associate Spoke VPCs with Spoke Route Table
-resource "aws_ec2_transit_gateway_route_table_association" "spoke1" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spoke1_attachment.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
+# Associate Spk VPCs with Spk Route Table
+resource "aws_ec2_transit_gateway_route_table_association" "spk1" {
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spk1_attachment.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spk.id
 }
 
-resource "aws_ec2_transit_gateway_route_table_association" "spoke2" {
-  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spoke2_attachment.id
-  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spoke.id
+resource "aws_ec2_transit_gateway_route_table_association" "spk2" {
+  transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spk2_attachment.id
+  transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.spk.id
 }
 
 # =============================================================================
@@ -147,7 +147,7 @@ output "transit_gateway_route_table_ids" {
   description = "Transit Gateway route table IDs"
   value = {
     fw_common = aws_ec2_transit_gateway_route_table.fw_common.id
-    spoke     = aws_ec2_transit_gateway_route_table.spoke.id
+    spk     = aws_ec2_transit_gateway_route_table.spk.id
   }
 }
 

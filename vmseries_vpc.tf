@@ -78,7 +78,7 @@ module "vmseries_subnets" {
 # =============================================================================
 
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id       = aws_vpc.security.id
+  vpc_id       = aws_vpc.inspection.id
   service_name = "com.amazonaws.${var.region}.s3"
   
   route_table_ids = [
@@ -96,11 +96,11 @@ resource "aws_vpc_endpoint" "s3" {
 # =============================================================================
 
 resource "aws_route_table" "mgmt" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.security.id
+    gateway_id = aws_internet_gateway.inspection.id
   }
 
   tags = {
@@ -113,7 +113,7 @@ resource "aws_route_table" "mgmt" {
 # =============================================================================
 
 resource "aws_route_table" "trust" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   tags = {
     Name = "${var.fw_prefix}-trust-rtb"
@@ -125,7 +125,7 @@ resource "aws_route_table" "trust" {
 # =============================================================================
 
 resource "aws_route_table" "untrust" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -142,7 +142,7 @@ resource "aws_route_table" "untrust" {
 # =============================================================================
 
 resource "aws_route_table" "gwlbe_az1" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   route {
     cidr_block         = "10.0.0.0/8"
@@ -169,7 +169,7 @@ resource "aws_route_table" "gwlbe_az1" {
 # =============================================================================
 
 resource "aws_route_table" "gwlbe_az2" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
   
   route {
     cidr_block         = "10.0.0.0/8"
@@ -196,7 +196,7 @@ resource "aws_route_table" "gwlbe_az2" {
 # =============================================================================
 
 resource "aws_route_table" "tgw_az1" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   route {
     cidr_block      = "0.0.0.0/0"
@@ -213,7 +213,7 @@ resource "aws_route_table" "tgw_az1" {
 # =============================================================================
 
 resource "aws_route_table" "tgw_az2" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   route {
     cidr_block      = "0.0.0.0/0"
@@ -309,12 +309,12 @@ module "rtb_association_untrust" {
 
 output "security_vpc_id" {
   description = "Security VPC ID"
-  value       = aws_vpc.security.id
+  value       = aws_vpc.inspection.id
 }
 
 output "security_vpc_cidr" {
   description = "Security VPC CIDR block"
-  value       = aws_vpc.security.cidr_block
+  value       = aws_vpc.inspection.cidr_block
 }
 
 output "security_igw_id" {
