@@ -32,43 +32,43 @@ module "vmseries_subnets" {
   subnets = {
     "mgmt-az1" = {
       az   = data.aws_availability_zones.available.names[0]
-      cidr = var.fw_cidr_mgmt_az1
+      cidr = var.inspection_mgmt_az1
     },
     "mgmt-az2" = {
       az   = data.aws_availability_zones.available.names[1]
-      cidr = var.fw_cidr_mgmt_az2
+      cidr = var.inspection_mgmt_az2
     },
     "trust-az1" = {
       az   = data.aws_availability_zones.available.names[0]
-      cidr = var.fw_cidr_trust_az1
+      cidr = var.inspection_trust_az1
     },
     "trust-az2" = {
       az   = data.aws_availability_zones.available.names[1]
-      cidr = var.fw_cidr_trust_az2
+      cidr = var.inspection_trust_az2
     },
     "untrust-az1" = {
       az   = data.aws_availability_zones.available.names[0]
-      cidr = var.fw_cidr_untrust_az1
+      cidr = var.inspection_untrust_az1
     },
     "untrust-az2" = {
       az   = data.aws_availability_zones.available.names[1]
-      cidr = var.fw_cidr_untrust_az2
+      cidr = var.inspection_untrust_az2
     },
     "gwlbe-az1" = {
       az   = data.aws_availability_zones.available.names[0]
-      cidr = var.fw_cidr_gwlbe_az1
+      cidr = var.inspection_gwlbe_az1
     },
     "gwlbe-az2" = {
       az   = data.aws_availability_zones.available.names[1]
-      cidr = var.fw_cidr_gwlbe_az2
+      cidr = var.inspection_gwlbe_az2
     },
     "tgw-az1" = {
       az   = data.aws_availability_zones.available.names[0]
-      cidr = var.fw_cidr_tgw_az1
+      cidr = var.inspection_tgw_az1
     },
     "tgw-az2" = {
       az   = data.aws_availability_zones.available.names[1]
-      cidr = var.fw_cidr_tgw_az2
+      cidr = var.inspection_tgw_az2
     }
   }
 }
@@ -307,7 +307,7 @@ module "rtb_association_untrust" {
 # OUTPUTS
 # =============================================================================
 
-output "security_vpc_id" {
+output "inspection_vpc_id" {
   description = "Security VPC ID"
   value       = aws_vpc.inspection.id
 }

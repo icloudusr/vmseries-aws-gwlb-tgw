@@ -1,4 +1,109 @@
 # =============================================================================
+# UBUNTU AMI DATA SOURCE - UPDATED TO 22.04 LTS
+# =============================================================================
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
+
+# =============================================================================
+# SPK1 VPC AND NETWORKING
+# =============================================================================
+
+resource "aws_vpc" "spk1" {
+  cidr_block           = var.spk1_vpc_cidr
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+
+  tags = {
+    Name = "${var.spk1_prefix}-vpc"
+  }
+}
+
+resource "aws_internet_gateway" "spk1" {
+  vpc_id = aws_vpc.spk1.id
+
+  tags = {
+    Name = "${var.spk1_prefix}-igw"
+  }
+}
+
+module "spk1_subnets" {
+  source             = "./modules/subnets/"
+  vpc_id             = aws_vpc.spk1.id
+  subnet_name_prefix = "${var.spk1_prefix}-"
+
+  subnets = {
+    "vm-az1" = {
+      az   = data.aws_availability_zones.available.names[0]
+      cidr = var.spk1_vm_az1
+    },
+    "vm-az2" = {
+      az   = data.aws_availability_zones.available.names[1]
+      cidr = var.spk1_vm_az2
+    },
+    "alb-az1" = {
+      az   = data.aws_availability_zones.available.names[0]
+      cidr = var.spk1_alb_az1
+    },
+    "alb-az2" = {
+      az   = data.aws_availability_zones.available.names[1]
+      cidr = var.spk1_alb_az2
+    },
+    "gwlbe-az1" = {
+      az   = data.aws_availability_zones.available.names[0]
+      cidr = var.spk1_gwlbe_az1
+    },
+    "gwlbe-az2" = {
+      az   = data.aws_availability_zones.available.names[1]
+      cidr = var.spk1_gwlbe_az2
+    }
+  }
+}
+
+# =============================================================================
+# SPK1 GWLB ENDPOINTS
+# =============================================================================
+
+resource "aws_vpc_endpoint" "spk1_az1" {
+  service_name      = aws_vpc_endpoint_service.gwlb.service_name
+  subnet_ids        = [module.spk1_subnets.subnet_ids["gwlbe-az1"]]
+  vpc_endpoint_type = aws_vpc_endpoint_service.gwlb.service_type
+  vpc_id            = aws_vpc.spk1.id
+
+  tags = {
+    Name = "${var.spk1_prefix}-endpoint-az1"
+  }
+}
+
+resource "aws_vpc_endpoint" "spk1_az2" {
+  service_name      = aws_vpc_endpoint_service.gwlb.service_name
+  subnet_ids        = [module.spk1_subnets.subnet_ids["gwlbe-az2"]]
+  vpc_endpoint_type = aws_vpc_endpoint_service.gwlb.service_type
+  vpc_id            = aws_vpc.spk1.id
+
+  tags = {
+    Name = "${var.spk1_prefix}-endpoint-az2"
+  }
+}
+
+# =============================================================================
 # SPK1 ROUTE TABLES AND ASSOCIATIONS
 # =============================================================================
 
@@ -58,12 +163,12 @@ resource "aws_route_table" "spk1_igw" {
   vpc_id = aws_vpc.spk1.id
 
   route {
-    cidr_block      = var.spk1_cidr_alb_az1
+    cidr_block      = var.spk1_alb_az1
     vpc_endpoint_id = aws_vpc_endpoint.spk1_az1.id
   }
 
   route {
-    cidr_block      = var.spk1_cidr_alb_az2
+    cidr_block      = var.spk1_alb_az2
     vpc_endpoint_id = aws_vpc_endpoint.spk1_az2.id
   }
 

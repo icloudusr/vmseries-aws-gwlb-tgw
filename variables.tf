@@ -146,7 +146,7 @@ variable "spk1_prefix" {
   default     = "spk1"
 }
 
-variable "spk1_cidr" {
+variable "spk1_vpc_cidr" {
   description = "CIDR block for spk1 VPC"
   type        = string
   default     = "10.211.0.0/16"
@@ -176,13 +176,13 @@ variable "spk1_alb_az2" {
   default     = "10.211.1.16/28"
 }
 
-variable "spk1_cidr_gwlbe_az1" {
+variable "spk1_gwlbe_az1" {
   description = "CIDR for spk1 VPC GWLB endpoint subnet AZ1"
   type        = string
   default     = "10.211.2.0/28"
 }
 
-variable "spk1_cidr_gwlbe_az2" {
+variable "spk1_gwlbe_az2" {
   description = "CIDR for spk1 VPC GWLB endpoint subnet AZ2"
   type        = string
   default     = "10.211.2.16/28"
@@ -209,13 +209,13 @@ variable "spk2_prefix" {
   type        = string
   default     = "spk2"
 }
-variable "spk2_cidr" {
+variable "spk2_vpc_cidr" {
   description = "CIDR block for spk2 VPC"
   type        = string
   default     = "10.212.0.0/16"
 }
 
-variable "spk2_vm_az1" {
+variable "spk2_subnet_cidr" {
   description = "CIDR for spk2 VPC VM subnet AZ1"
   type        = string
   default     = "10.212.0.0/24"

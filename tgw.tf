@@ -15,11 +15,11 @@ resource "aws_ec2_transit_gateway" "main" {
 }
 
 # =============================================================================
-# SECURITY VPC ATTACHMENT
+# INSPECTION VPC ATTACHMENT
 # =============================================================================
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "main" {
-  vpc_id = aws_vpc.security.id
+  vpc_id = aws_vpc.inspection.id
 
   subnet_ids = [
     module.vmseries_subnets.subnet_ids["tgw-az1"],
@@ -75,7 +75,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "spk2_attachment" {
 }
 
 # =============================================================================
-# FIREWALL ROUTE TABLE (Security VPC Routes)
+# FIREWALL ROUTE TABLE (Inspection VPC Routes)
 # =============================================================================
 
 resource "aws_ec2_transit_gateway_route_table" "fw_common" {
@@ -91,7 +91,7 @@ resource "aws_ec2_transit_gateway_route_table_association" "fw_common" {
   transit_gateway_route_table_id = aws_ec2_transit_gateway_route_table.fw_common.id
 }
 
-# Routes for Security VPC to reach Spk VPCs
+# Routes for Inspection VPC to reach Spk VPCs
 resource "aws_ec2_transit_gateway_route" "spk1" {
   destination_cidr_block         = var.spk1_vpc_cidr
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.spk1_attachment.id
@@ -116,7 +116,7 @@ resource "aws_ec2_transit_gateway_route_table" "spk" {
   }
 }
 
-# Default route for Spks - all traffic goes to Security VPC
+# Default route for Spks - all traffic goes to Inspection VPC
 resource "aws_ec2_transit_gateway_route" "spk" {
   destination_cidr_block         = "0.0.0.0/0"
   transit_gateway_attachment_id  = aws_ec2_transit_gateway_vpc_attachment.main.id
