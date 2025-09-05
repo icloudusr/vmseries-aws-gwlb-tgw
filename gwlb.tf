@@ -36,7 +36,7 @@ resource "aws_lb_target_group" "gwlb" {
   port        = 6081
   protocol    = "GENEVE"
   target_type = "instance"
-  vpc_id      = aws_vpc.security.id
+  vpc_id      = aws_vpc.inspection.id
 
   health_check {
     enabled             = true
@@ -113,7 +113,7 @@ resource "aws_vpc_endpoint" "az1" {
   service_name      = aws_vpc_endpoint_service.gwlb.service_name
   subnet_ids        = [module.vmseries_subnets.subnet_ids["gwlbe-az1"]]
   vpc_endpoint_type = aws_vpc_endpoint_service.gwlb.service_type
-  vpc_id            = aws_vpc.security.id
+  vpc_id            = aws_vpc.inspection.id
 
   tags = {
     Name = "${local.gwlb_name}-endpoint-az1"

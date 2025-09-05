@@ -129,7 +129,7 @@ resource "aws_route_table" "untrust" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.security.id
+    gateway_id = aws_internet_gateway.inspection.id
   }
 
   tags = {
@@ -319,7 +319,7 @@ output "security_vpc_cidr" {
 
 output "security_igw_id" {
   description = "Security VPC Internet Gateway ID"
-  value       = aws_internet_gateway.security.id
+  value       = aws_internet_gateway.inspection.id
 }
 
 output "inspection_route_table_ids" {
