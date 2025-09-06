@@ -31,6 +31,10 @@ data "aws_ami" "vmseries" {
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
+data "aws_subnet" "eni0" {
+  id = var.eni0_subnet
+}
+
 # =============================================================================
 # LOCALS FOR CONFIGURATION
 # =============================================================================
@@ -299,7 +303,7 @@ resource "aws_instance" "vmseries" {
   tags = merge(local.common_tags, {
     Name = "${var.name}-${each.value.index}"
     Type = "VM-Series"
-    AZ   = aws_network_interface.eni0[each.key].availability_zone
+    AZ   = data.aws_subnet.eni0.availability_zone
   })
 
   # Dependencies
