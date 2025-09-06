@@ -162,6 +162,9 @@ resource "aws_route_table" "gwlbe_az1" {
   tags = {
     Name = "${var.fw_prefix}-gwlbe-az1-rtb"
   }
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.main]
+
 }
 
 # =============================================================================
@@ -189,6 +192,9 @@ resource "aws_route_table" "gwlbe_az2" {
   tags = {
     Name = "${var.fw_prefix}-gwlbe-az2-rtb"
   }
+
+  depends_on = [aws_ec2_transit_gateway_vpc_attachment.main]
+  
 }
 
 # =============================================================================

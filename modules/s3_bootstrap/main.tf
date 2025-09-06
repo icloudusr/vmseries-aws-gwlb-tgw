@@ -156,7 +156,6 @@ resource "aws_s3_object" "other_files" {
   }
 }
 
-# Create empty directory markers if no files provided
 resource "aws_s3_object" "empty_directories" {
   for_each = toset([
     for dir in ["config", "content", "license", "software"] : dir

@@ -59,25 +59,39 @@ resource "aws_lb_target_group" "gwlb" {
 
 # AZ1 Target Group Attachments
 resource "aws_lb_target_group_attachment" "az1" {
+<<<<<<< HEAD
+  count = var.fw_count_az1
+  
+=======
   for_each = {
     for i in range(var.fw_count_az1) : "fw-az1-${i}" => {
       instance_id = module.fw_az1.instance_id[i]
     }
   }
   
+>>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
   target_group_arn = aws_lb_target_group.gwlb.arn
   target_id        = each.value.instance_id
   port             = 6081
 }
 
+<<<<<<< HEAD
+# AZ2 Target Group Attachments - SIMPLIFIED TO COUNT
+=======
 # AZ2 Target Group Attachments
+>>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
 resource "aws_lb_target_group_attachment" "az2" {
+<<<<<<< HEAD
+  count = var.fw_count_az2
+  
+=======
   for_each = {
     for i in range(var.fw_count_az2) : "fw-az2-${i}" => {
       instance_id = module.fw_az2.instance_id[i]
     }
   }
   
+>>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
   target_group_arn = aws_lb_target_group.gwlb.arn
   target_id        = each.value.instance_id
   port             = 6081

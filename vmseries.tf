@@ -54,11 +54,13 @@ module "fw_az1" {
   eni1_subnet = module.vmseries_subnets.subnet_ids["mgmt-az1"]
   eni2_subnet = module.vmseries_subnets.subnet_ids["untrust-az1"]
   
+  create_eni2 = true
+
   # Public IP configuration
   eni0_public_ip = false
   eni1_public_ip = true
   eni2_public_ip = true
-  
+
   # Bootstrap configuration
   user_data        = "vmseries-bootstrap-aws-s3bucket=${module.vmseries_bootstrap.bucket_name}\nmgmt-interface-swap=enable"
   instance_profile = module.vmseries_bootstrap.instance_profile
@@ -97,6 +99,8 @@ module "fw_az2" {
   eni1_subnet = module.vmseries_subnets.subnet_ids["mgmt-az2"]
   eni2_subnet = module.vmseries_subnets.subnet_ids["untrust-az2"]
   
+  create_eni2 = true
+
   # Public IP configuration
   eni0_public_ip = false
   eni1_public_ip = true

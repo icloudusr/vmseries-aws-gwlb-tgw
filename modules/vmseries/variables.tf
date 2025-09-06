@@ -57,6 +57,13 @@ variable "eni2_subnet" {
   default     = null
 }
 
+# ✅ NEW: Boolean control for ENI2 creation
+variable "create_eni2" {
+  description = "Whether to create ENI2 interfaces"
+  type        = bool
+  default     = true
+}
+
 # =============================================================================
 # PUBLIC IP CONFIGURATION
 # =============================================================================

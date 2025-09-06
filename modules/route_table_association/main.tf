@@ -35,7 +35,11 @@ resource "aws_route_table_association" "main" {
 # =============================================================================
 
 data "aws_route_table" "main" {
+<<<<<<< HEAD
+  id = var.route_table_id  # ✅ FIXED: Changed from route_table_id to id
+=======
   route_table_id = var.route_table_id
+>>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
 }
 
 data "aws_subnet" "subnets" {
