@@ -38,19 +38,19 @@ data "aws_caller_identity" "current" {}
 locals {
   # ✅ BACKWARD COMPATIBILITY: Use new variable if provided, otherwise fall back to old one
   mgmt_cidrs = var.mgmt_sg_cidrs != null ? var.mgmt_sg_cidrs : var.eni0_sg_prefix
-
-<<<<<<< HEAD
+  
   # ✅ NEW: Create instance map for for_each
   eni_instances = {
     for i in range(var.vm_count) : "instance-${i}" => {
       index = i
     }
   }
+}
   
   # ✅ FIXED: Remove computed dependency - always use base instances
   eni2_instances = local.eni_instances
 
-=======
+
   # ✅ NEW: Create instance map for for_each
   eni_instances = {
     for i in range(var.vm_count) : "instance-${i}" => {
@@ -61,7 +61,6 @@ locals {
   # ✅ NEW: ENI2 instances (only when subnet provided)
   eni2_instances = var.eni2_subnet != null ? local.eni_instances : {}
 
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
   # Common tags for all resources
   common_tags = merge(
     {
@@ -193,17 +192,13 @@ resource "aws_network_interface" "eni1" {
 
 # ENI2 - Untrust/Data Interface (Optional)
 resource "aws_network_interface" "eni2" {
-<<<<<<< HEAD
   for_each = var.create_eni2 ? local.eni_instances : {}  # ✅ FIXED: Use boolean control
-=======
-  for_each = local.eni2_instances
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
   
   subnet_id         = var.eni2_subnet
   security_groups   = [aws_security_group.data.id]
   source_dest_check = false
   description       = "${var.name}-${each.value.index}-untrust"
-
+  
   tags = merge(local.common_tags, {
     Name = "${var.name}-${each.value.index}-eni2"
     Type = "untrust"
@@ -246,21 +241,16 @@ resource "aws_eip" "eni1" {
 
 # EIP for ENI2 (Untrust) - if interface exists and requested
 resource "aws_eip" "eni2" {
-<<<<<<< HEAD
   for_each = var.eni2_public_ip && var.create_eni2 ? local.eni_instances : {}  # ✅ FIXED: Add create_eni2 check
   
-=======
-  for_each = var.eni2_public_ip ? local.eni2_instances : {}
-  
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
   domain            = "vpc"
   network_interface = aws_network_interface.eni2[each.key].id
-
+  
   tags = merge(local.common_tags, {
     Name = "${var.name}-${each.value.index}-eni2-eip"
     Type = "Untrust"
   })
-
+  
   depends_on = [aws_network_interface.eni2]
 }
 
