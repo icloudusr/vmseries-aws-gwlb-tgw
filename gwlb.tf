@@ -14,12 +14,12 @@ resource "aws_lb" "gwlb" {
   name               = local.gwlb_name
   internal           = false
   load_balancer_type = "gateway"
-  
+
   subnets = [
-    module.vmseries_subnets.subnet_ids["gwlbe-az1"], 
+    module.vmseries_subnets.subnet_ids["gwlbe-az1"],
     module.vmseries_subnets.subnet_ids["gwlbe-az2"]
   ]
-  
+
   enable_cross_zone_load_balancing = true
 
   tags = {
@@ -59,41 +59,19 @@ resource "aws_lb_target_group" "gwlb" {
 
 # AZ1 Target Group Attachments
 resource "aws_lb_target_group_attachment" "az1" {
-<<<<<<< HEAD
   count = var.fw_count_az1
-  
-=======
-  for_each = {
-    for i in range(var.fw_count_az1) : "fw-az1-${i}" => {
-      instance_id = module.fw_az1.instance_id[i]
-    }
-  }
-  
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
+
   target_group_arn = aws_lb_target_group.gwlb.arn
-  target_id        = each.value.instance_id
+  target_id        = module.fw_az1.instance_id[count.index]
   port             = 6081
 }
 
-<<<<<<< HEAD
 # AZ2 Target Group Attachments - SIMPLIFIED TO COUNT
-=======
-# AZ2 Target Group Attachments
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
 resource "aws_lb_target_group_attachment" "az2" {
-<<<<<<< HEAD
   count = var.fw_count_az2
-  
-=======
-  for_each = {
-    for i in range(var.fw_count_az2) : "fw-az2-${i}" => {
-      instance_id = module.fw_az2.instance_id[i]
-    }
-  }
-  
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
+
   target_group_arn = aws_lb_target_group.gwlb.arn
-  target_id        = each.value.instance_id
+  target_id        = module.fw_az2.instance_id[count.index]
   port             = 6081
 }
 
@@ -121,7 +99,7 @@ resource "aws_lb_listener" "gwlb" {
 resource "aws_vpc_endpoint_service" "gwlb" {
   acceptance_required        = false
   gateway_load_balancer_arns = [aws_lb.gwlb.arn]
-  
+
   allowed_principals = [
     data.aws_caller_identity.current.arn
   ]
@@ -196,8 +174,8 @@ output "inspection_vpc_endpoint_ids" {
 output "target_group_attachments" {
   description = "Information about target group attachments"
   value = {
-    az1_count = length(aws_lb_target_group_attachment.az1)
-    az2_count = length(aws_lb_target_group_attachment.az2)
+    az1_count     = length(aws_lb_target_group_attachment.az1)
+    az2_count     = length(aws_lb_target_group_attachment.az2)
     total_targets = length(aws_lb_target_group_attachment.az1) + length(aws_lb_target_group_attachment.az2)
   }
 }
