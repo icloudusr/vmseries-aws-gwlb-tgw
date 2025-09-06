@@ -80,7 +80,7 @@ module "vmseries_subnets" {
 resource "aws_vpc_endpoint" "s3" {
   vpc_id       = aws_vpc.inspection.id
   service_name = "com.amazonaws.${var.region}.s3"
-  
+
   route_table_ids = [
     aws_route_table.mgmt.id,
     aws_route_table.trust.id
@@ -173,7 +173,7 @@ resource "aws_route_table" "gwlbe_az1" {
 
 resource "aws_route_table" "gwlbe_az2" {
   vpc_id = aws_vpc.inspection.id
-  
+
   route {
     cidr_block         = "10.0.0.0/8"
     transit_gateway_id = aws_ec2_transit_gateway_vpc_attachment.main.transit_gateway_id
@@ -194,7 +194,7 @@ resource "aws_route_table" "gwlbe_az2" {
   }
 
   depends_on = [aws_ec2_transit_gateway_vpc_attachment.main]
-  
+
 }
 
 # =============================================================================

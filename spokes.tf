@@ -322,7 +322,7 @@ resource "aws_lb" "spk1" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.spk1_sg.id]
-  
+
   subnets = [
     module.spk1_subnets.subnet_ids["alb-az1"],
     module.spk1_subnets.subnet_ids["alb-az2"]
@@ -493,8 +493,8 @@ resource "aws_network_interface" "spk2_vm1" {
 }
 
 resource "aws_eip" "spk2_vm1" {
-  domain                    = "vpc"
-  network_interface         = aws_network_interface.spk2_vm1.id
+  domain            = "vpc"
+  network_interface = aws_network_interface.spk2_vm1.id
 
   tags = {
     Name = "${var.spk2_prefix}-vm1-eip"

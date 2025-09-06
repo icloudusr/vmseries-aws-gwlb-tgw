@@ -5,12 +5,12 @@
 variable "vpc_id" {
   description = "ID of the VPC where subnets will be created"
   type        = string
-  
+
   validation {
     condition     = length(var.vpc_id) > 0
     error_message = "VPC ID cannot be empty."
   }
-  
+
   validation {
     condition     = can(regex("^vpc-", var.vpc_id))
     error_message = "VPC ID must be a valid AWS VPC ID (starts with 'vpc-')."
@@ -21,7 +21,7 @@ variable "subnet_name_prefix" {
   description = "Prefix to add to subnet names for consistent naming"
   type        = string
   default     = ""
-  
+
   validation {
     condition     = length(var.subnet_name_prefix) <= 50
     error_message = "Subnet name prefix must be 50 characters or less."
@@ -43,28 +43,28 @@ variable "subnets" {
     - ipv6_native: IPv6-only subnet (default: false)
     - tags: Additional tags for the subnet (default: {})
   EOT
-  
+
   type = map(object({
     az   = string
     cidr = string
-    
+
     # Optional networking configurations
-    map_public_ip_on_launch                 = optional(bool, false)
-    assign_ipv6_address_on_creation        = optional(bool, false)
-    enable_dns64                           = optional(bool, false)
+    map_public_ip_on_launch                        = optional(bool, false)
+    assign_ipv6_address_on_creation                = optional(bool, false)
+    enable_dns64                                   = optional(bool, false)
     enable_resource_name_dns_a_record_on_launch    = optional(bool, false)
     enable_resource_name_dns_aaaa_record_on_launch = optional(bool, false)
-    ipv6_native                            = optional(bool, false)
-    
+    ipv6_native                                    = optional(bool, false)
+
     # Additional tags
     tags = optional(map(string), {})
   }))
-  
+
   validation {
     condition     = length(var.subnets) > 0
     error_message = "At least one subnet configuration must be provided."
   }
-  
+
   # Validate CIDR blocks
   validation {
     condition = alltrue([
@@ -72,7 +72,7 @@ variable "subnets" {
     ])
     error_message = "All subnet CIDR blocks must be valid."
   }
-  
+
   # Validate availability zones are not empty
   validation {
     condition = alltrue([
@@ -80,7 +80,7 @@ variable "subnets" {
     ])
     error_message = "All availability zones must be specified."
   }
-  
+
   # Validate unique subnet names
   validation {
     condition     = length(keys(var.subnets)) == length(distinct(keys(var.subnets)))
@@ -92,7 +92,7 @@ variable "common_tags" {
   description = "Common tags to apply to all subnets"
   type        = map(string)
   default     = {}
-  
+
   validation {
     condition     = can(var.common_tags)
     error_message = "Common tags must be a valid map of strings."

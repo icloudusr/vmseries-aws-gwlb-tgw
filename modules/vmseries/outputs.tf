@@ -21,7 +21,7 @@ output "instance_details" {
       private_ip        = instance.private_ip
       public_ip         = instance.public_ip
       instance_state    = instance.instance_state
-      ami_id           = instance.ami
+      ami_id            = instance.ami
     }
   ]
 }
@@ -30,7 +30,6 @@ output "instance_details" {
 # NETWORK INTERFACE OUTPUTS
 # =============================================================================
 
-<<<<<<< HEAD
 output "eni_map" {
   description = "Map of ENI details by instance"
   value = {
@@ -39,45 +38,12 @@ output "eni_map" {
       eni0_private_ip = aws_network_interface.eni0[k].private_ip
       eni1_id         = aws_network_interface.eni1[k].id
       eni1_private_ip = aws_network_interface.eni1[k].private_ip
-      eni2_id         = var.create_eni2 ? aws_network_interface.eni2[k].id : null  # ✅ FIXED
-      eni2_private_ip = var.create_eni2 ? aws_network_interface.eni2[k].private_ip : null  # ✅ FIXED
+      eni2_id         = var.create_eni2 ? aws_network_interface.eni2[k].id : null         # ✅ FIXED
+      eni2_private_ip = var.create_eni2 ? aws_network_interface.eni2[k].private_ip : null # ✅ FIXED
     }
   }
-=======
-output "eni0_id" {
-  description = "List of ENI0 (Trust/Data) network interface IDs"
-  value       = values(aws_network_interface.eni0)[*].id
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
 }
 
-<<<<<<< HEAD
-=======
-output "eni0_private_ip" {
-  description = "List of ENI0 (Trust/Data) private IP addresses"
-  value       = values(aws_network_interface.eni0)[*].private_ip
-}
-
-output "eni1_id" {
-  description = "List of ENI1 (Management) network interface IDs"
-  value       = values(aws_network_interface.eni1)[*].id
-}
-
-output "eni1_private_ip" {
-  description = "List of ENI1 (Management) private IP addresses"
-  value       = values(aws_network_interface.eni1)[*].private_ip
-}
-
-output "eni2_id" {
-  description = "List of ENI2 (Untrust/Data) network interface IDs (if created)"
-  value       = length(aws_network_interface.eni2) > 0 ? values(aws_network_interface.eni2)[*].id : []
-}
-
-output "eni2_private_ip" {
-  description = "List of ENI2 (Untrust/Data) private IP addresses (if created)"
-  value       = length(aws_network_interface.eni2) > 0 ? values(aws_network_interface.eni2)[*].private_ip : []
-}
-
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
 # =============================================================================
 # PUBLIC IP OUTPUTS
 # =============================================================================
@@ -145,27 +111,16 @@ output "vm_series_summary" {
     instance_type   = var.size
     panos_version   = var.panos
     license_type    = var.license
-    
+
     instances = [
-<<<<<<< HEAD
       for k, v in local.eni_instances : {
         name           = "${var.name}-${v.index}"
         instance_id    = aws_instance.vmseries[k].id
         trust_ip       = aws_network_interface.eni0[k].private_ip
         mgmt_ip        = aws_network_interface.eni1[k].private_ip
-        untrust_ip     = var.create_eni2 ? aws_network_interface.eni2[k].private_ip : null  # ✅ FIXED
+        untrust_ip     = var.create_eni2 ? aws_network_interface.eni2[k].private_ip : null # ✅ FIXED
         mgmt_public_ip = var.eni1_public_ip && length(aws_eip.eni1) > 0 ? aws_eip.eni1[k].public_ip : null
         mgmt_url       = var.eni1_public_ip && length(aws_eip.eni1) > 0 ? "https://${aws_eip.eni1[k].public_ip}" : null
-=======
-      for k, v in local.eni_instances : {
-        name           = "${var.name}-${v.index}"
-        instance_id    = aws_instance.vmseries[k].id
-        trust_ip       = aws_network_interface.eni0[k].private_ip
-        mgmt_ip        = aws_network_interface.eni1[k].private_ip
-        untrust_ip     = var.eni2_subnet != null ? aws_network_interface.eni2[k].private_ip : null
-        mgmt_public_ip = var.eni1_public_ip && length(aws_eip.eni1) > 0 ? aws_eip.eni1[k].public_ip : null
-        mgmt_url       = var.eni1_public_ip && length(aws_eip.eni1) > 0 ? "https://${aws_eip.eni1[k].public_ip}" : null
->>>>>>> bbad697f65028432b84e97f8693bcfa473f24e52
       }
     ]
   }
@@ -197,16 +152,3 @@ output "instance_map" {
   }
 }
 
-output "eni_map" {
-  description = "Map of ENI details by instance"
-  value = {
-    for k, v in local.eni_instances : k => {
-      eni0_id         = aws_network_interface.eni0[k].id
-      eni0_private_ip = aws_network_interface.eni0[k].private_ip
-      eni1_id         = aws_network_interface.eni1[k].id
-      eni1_private_ip = aws_network_interface.eni1[k].private_ip
-      eni2_id         = var.eni2_subnet != null ? aws_network_interface.eni2[k].id : null
-      eni2_private_ip = var.eni2_subnet != null ? aws_network_interface.eni2[k].private_ip : null
-    }
-  }
-}

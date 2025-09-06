@@ -8,11 +8,11 @@
 
 locals {
   # Convert old list format to new set format for backward compatibility
-  config_files_final = length(var.config_files) > 0 ? var.config_files : toset(var.config)
-  content_files_final = length(var.content_files) > 0 ? var.content_files : toset(var.content)
-  license_files_final = length(var.license_files) > 0 ? var.license_files : toset(var.license)
+  config_files_final   = length(var.config_files) > 0 ? var.config_files : toset(var.config)
+  content_files_final  = length(var.content_files) > 0 ? var.content_files : toset(var.content)
+  license_files_final  = length(var.license_files) > 0 ? var.license_files : toset(var.license)
   software_files_final = length(var.software_files) > 0 ? var.software_files : toset(var.software)
-  other_files_final = length(var.other_files) > 0 ? var.other_files : toset(var.other)
+  other_files_final    = length(var.other_files) > 0 ? var.other_files : toset(var.other)
 }
 
 # =============================================================================
@@ -48,7 +48,7 @@ resource "aws_s3_bucket_public_access_block" "bootstrap" {
 # Enable versioning
 resource "aws_s3_bucket_versioning" "bootstrap" {
   bucket = aws_s3_bucket.bootstrap.id
-  
+
   versioning_configuration {
     status = "Enabled"
   }
@@ -159,7 +159,7 @@ resource "aws_s3_object" "other_files" {
 resource "aws_s3_object" "empty_directories" {
   for_each = toset([
     for dir in ["config", "content", "license", "software"] : dir
-    if (
+    if(
       (dir == "config" && length(local.config_files_final) == 0) ||
       (dir == "content" && length(local.content_files_final) == 0) ||
       (dir == "license" && length(local.license_files_final) == 0) ||

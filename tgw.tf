@@ -147,7 +147,7 @@ output "transit_gateway_route_table_ids" {
   description = "Transit Gateway route table IDs"
   value = {
     fw_common = aws_ec2_transit_gateway_route_table.fw_common.id
-    spk     = aws_ec2_transit_gateway_route_table.spk.id
+    spk       = aws_ec2_transit_gateway_route_table.spk.id
   }
 }
 

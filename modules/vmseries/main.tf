@@ -36,20 +36,7 @@ data "aws_caller_identity" "current" {}
 # =============================================================================
 
 locals {
-  # ✅ BACKWARD COMPATIBILITY: Use new variable if provided, otherwise fall back to old one
   mgmt_cidrs = var.mgmt_sg_cidrs != null ? var.mgmt_sg_cidrs : var.eni0_sg_prefix
-  
-  # ✅ NEW: Create instance map for for_each
-  eni_instances = {
-    for i in range(var.vm_count) : "instance-${i}" => {
-      index = i
-    }
-  }
-}
-  
-  # ✅ FIXED: Remove computed dependency - always use base instances
-  eni2_instances = local.eni_instances
-
 
   # ✅ NEW: Create instance map for for_each
   eni_instances = {
@@ -57,8 +44,8 @@ locals {
       index = i
     }
   }
-  
-  # ✅ NEW: ENI2 instances (only when subnet provided)
+
+  # ✅ NEW: ENI2 instances (only when subnet provided)  
   eni2_instances = var.eni2_subnet != null ? local.eni_instances : {}
 
   # Common tags for all resources
@@ -163,7 +150,7 @@ resource "aws_security_group" "data" {
 # ENI0 - Trust/Data Interface
 resource "aws_network_interface" "eni0" {
   for_each = local.eni_instances
-  
+
   subnet_id         = var.eni0_subnet
   security_groups   = [aws_security_group.data.id]
   source_dest_check = false
@@ -178,10 +165,10 @@ resource "aws_network_interface" "eni0" {
 # ENI1 - Management Interface
 resource "aws_network_interface" "eni1" {
   for_each = local.eni_instances
-  
+
   subnet_id         = var.eni1_subnet
   security_groups   = [aws_security_group.management.id]
-  source_dest_check = true  # Management interface should have source/dest check
+  source_dest_check = true # Management interface should have source/dest check
   description       = "${var.name}-${each.value.index}-management"
 
   tags = merge(local.common_tags, {
@@ -192,13 +179,13 @@ resource "aws_network_interface" "eni1" {
 
 # ENI2 - Untrust/Data Interface (Optional)
 resource "aws_network_interface" "eni2" {
-  for_each = var.create_eni2 ? local.eni_instances : {}  # ✅ FIXED: Use boolean control
-  
+  for_each = var.create_eni2 ? local.eni_instances : {} # ✅ FIXED: Use boolean control
+
   subnet_id         = var.eni2_subnet
   security_groups   = [aws_security_group.data.id]
   source_dest_check = false
   description       = "${var.name}-${each.value.index}-untrust"
-  
+
   tags = merge(local.common_tags, {
     Name = "${var.name}-${each.value.index}-eni2"
     Type = "untrust"
@@ -212,7 +199,7 @@ resource "aws_network_interface" "eni2" {
 # EIP for ENI0 (Trust) - if requested
 resource "aws_eip" "eni0" {
   for_each = var.eni0_public_ip ? local.eni_instances : {}
-  
+
   domain            = "vpc"
   network_interface = aws_network_interface.eni0[each.key].id
 
@@ -227,7 +214,7 @@ resource "aws_eip" "eni0" {
 # EIP for ENI1 (Management)
 resource "aws_eip" "eni1" {
   for_each = var.eni1_public_ip ? local.eni_instances : {}
-  
+
   domain            = "vpc"
   network_interface = aws_network_interface.eni1[each.key].id
 
@@ -241,16 +228,16 @@ resource "aws_eip" "eni1" {
 
 # EIP for ENI2 (Untrust) - if interface exists and requested
 resource "aws_eip" "eni2" {
-  for_each = var.eni2_public_ip && var.create_eni2 ? local.eni_instances : {}  # ✅ FIXED: Add create_eni2 check
-  
+  for_each = var.eni2_public_ip && var.create_eni2 ? local.eni_instances : {} # ✅ FIXED: Add create_eni2 check
+
   domain            = "vpc"
   network_interface = aws_network_interface.eni2[each.key].id
-  
+
   tags = merge(local.common_tags, {
     Name = "${var.name}-${each.value.index}-eni2-eip"
     Type = "Untrust"
   })
-  
+
   depends_on = [aws_network_interface.eni2]
 }
 
@@ -301,7 +288,7 @@ resource "aws_instance" "vmseries" {
 
   # Optional third interface
   dynamic "network_interface" {
-    for_each = var.create_eni2 ? [1] : []  # ✅ FIXED: Use boolean control
+    for_each = var.create_eni2 ? [1] : [] # ✅ FIXED: Use boolean control
     content {
       device_index         = 2
       network_interface_id = aws_network_interface.eni2[each.key].id
@@ -328,8 +315,8 @@ resource "aws_instance" "vmseries" {
   lifecycle {
     create_before_destroy = true
     ignore_changes = [
-      ami,       # Ignore AMI changes to prevent accidental upgrades
-      user_data  # Ignore user_data changes after initial deployment
+      ami,      # Ignore AMI changes to prevent accidental upgrades
+      user_data # Ignore user_data changes after initial deployment
     ]
   }
 }

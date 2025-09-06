@@ -26,10 +26,10 @@ provider "aws" {
   # Apply default tags to all resources
   default_tags {
     tags = {
-      Environment   = "vm-series-demo"
-      ManagedBy     = "terraform"
-      Project       = "swfw"
-      DeploymentId  = random_string.deployment.result
+      Environment  = "vm-series-demo"
+      ManagedBy    = "terraform"
+      Project      = "swfw"
+      DeploymentId = random_string.deployment.result
     }
   }
 }

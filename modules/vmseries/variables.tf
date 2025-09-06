@@ -1,4 +1,4 @@
-  # =============================================================================
+# =============================================================================
 # VM-SERIES MODULE - VARIABLES (PHASE 1 - BACKWARD COMPATIBLE)
 # =============================================================================
 
@@ -195,7 +195,7 @@ variable "license_type_map" {
   type        = map(string)
   default = {
     "byol"    = "6njl1pau431dv1qxipg63mvah"
-    "bundle1" = "e9yfvyj3uag5uo5j2hjikv74n"  
+    "bundle1" = "e9yfvyj3uag5uo5j2hjikv74n"
     "bundle2" = "hd44w1chf26uv4p52cdynb2o"
   }
 }

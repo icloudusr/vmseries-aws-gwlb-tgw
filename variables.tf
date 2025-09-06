@@ -12,30 +12,30 @@ variable "key_name" {
 
 variable "your_public_ip" {
   description = "my public IP range"
-  type        = string 
-  default = "98.97.0.0/16" 
+  type        = string
+  default     = "98.97.0.0/16"
 }
 
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default = {
-    project = "swfw"
+    project     = "swfw"
     Environment = "demo"
-    ManagedBy = "terraform"
+    ManagedBy   = "terraform"
   }
 }
 
-variable "fw_license" { 
+variable "fw_license" {
   description = "FW License Type"
   type        = string
-  default = "byol" 
+  default     = "byol"
 }
 
 variable "fw_panos" {
   description = "PANOS Version"
-  type        = string 
-  default = "11.1.6" 
+  type        = string
+  default     = "11.1.6"
 }
 
 variable "fw_prefix" {
@@ -47,19 +47,19 @@ variable "fw_prefix" {
 variable "fw_count_az1" {
   description = "FW Count for AZ1"
   type        = number
-  default = 1 
+  default     = 1
 }
 
 variable "fw_count_az2" {
   description = "FW Count for AZ2"
-  type        = number 
-  default = 1 
+  type        = number
+  default     = 1
 }
 
 variable "fw_size" {
   description = "Instance Size"
-  type        = string 
-  default = "c6in.xlarge" 
+  type        = string
+  default     = "c6in.xlarge"
 }
 
 variable "fw_mgmt_src_cidrs" {
@@ -229,6 +229,6 @@ variable "spk2_vm1_ip" {
 
 variable "spoke_size" {
   description = "spoke instance size"
-  type        = string 
-  default = "t3.micro" 
+  type        = string
+  default     = "t3.micro"
 }

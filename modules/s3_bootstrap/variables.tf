@@ -71,7 +71,7 @@ variable "force_destroy" {
 variable "enable_lifecycle" {
   description = "Enable lifecycle management for the S3 bucket"
   type        = bool
-  default     = false  # Simplified for Phase 1
+  default     = false # Simplified for Phase 1
 }
 
 variable "versioning_enabled" {
@@ -93,13 +93,13 @@ variable "create_instance_profile" {
 variable "enable_cloudwatch" {
   description = "Enable CloudWatch monitoring capabilities"
   type        = bool
-  default     = false  # Simplified for Phase 1
+  default     = false # Simplified for Phase 1
 }
 
 variable "enable_ssm" {
   description = "Enable AWS Systems Manager capabilities"
   type        = bool
-  default     = false  # Simplified for Phase 1
+  default     = false # Simplified for Phase 1
 }
 
 # =============================================================================

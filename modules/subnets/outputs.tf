@@ -43,23 +43,23 @@ output "subnet_details" {
       cidr_block        = subnet.cidr_block
       availability_zone = subnet.availability_zone
       vpc_id            = subnet.vpc_id
-      
+
       # Networking configurations
-      map_public_ip_on_launch                 = subnet.map_public_ip_on_launch
-      assign_ipv6_address_on_creation        = subnet.assign_ipv6_address_on_creation
-      enable_dns64                           = subnet.enable_dns64
+      map_public_ip_on_launch                        = subnet.map_public_ip_on_launch
+      assign_ipv6_address_on_creation                = subnet.assign_ipv6_address_on_creation
+      enable_dns64                                   = subnet.enable_dns64
       enable_resource_name_dns_a_record_on_launch    = subnet.enable_resource_name_dns_a_record_on_launch
       enable_resource_name_dns_aaaa_record_on_launch = subnet.enable_resource_name_dns_aaaa_record_on_launch
-      ipv6_native                            = subnet.ipv6_native
-      
+      ipv6_native                                    = subnet.ipv6_native
+
       # IPv6 information (if applicable)
-      ipv6_cidr_block                    = subnet.ipv6_cidr_block
-      ipv6_cidr_block_association_id     = subnet.ipv6_cidr_block_association_id
-      
+      ipv6_cidr_block                = subnet.ipv6_cidr_block
+      ipv6_cidr_block_association_id = subnet.ipv6_cidr_block_association_id
+
       # Metadata
-      owner_id          = subnet.owner_id
-      tags              = subnet.tags
-      tags_all          = subnet.tags_all
+      owner_id = subnet.owner_id
+      tags     = subnet.tags
+      tags_all = subnet.tags_all
     }
   }
 }
