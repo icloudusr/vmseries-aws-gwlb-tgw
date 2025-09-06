@@ -1,5 +1,5 @@
 # =============================================================================
-# GATEWAY LOAD BALANCER CONFIGURATION
+# GATEWAY LOAD BALANCER CONFIGURATION - UPDATED FOR FOR_EACH
 # =============================================================================
 
 locals {
@@ -54,20 +54,32 @@ resource "aws_lb_target_group" "gwlb" {
 }
 
 # =============================================================================
-# TARGET GROUP ATTACHMENTS
+# TARGET GROUP ATTACHMENTS - UPDATED FOR FOR_EACH COMPATIBILITY
 # =============================================================================
 
+# AZ1 Target Group Attachments
 resource "aws_lb_target_group_attachment" "az1" {
-  count            = var.fw_count_az1
+  for_each = {
+    for i in range(var.fw_count_az1) : "fw-az1-${i}" => {
+      instance_id = module.fw_az1.instance_id[i]
+    }
+  }
+  
   target_group_arn = aws_lb_target_group.gwlb.arn
-  target_id        = element(module.fw_az1.instance_id, count.index)
+  target_id        = each.value.instance_id
   port             = 6081
 }
 
+# AZ2 Target Group Attachments
 resource "aws_lb_target_group_attachment" "az2" {
-  count            = var.fw_count_az2
+  for_each = {
+    for i in range(var.fw_count_az2) : "fw-az2-${i}" => {
+      instance_id = module.fw_az2.instance_id[i]
+    }
+  }
+  
   target_group_arn = aws_lb_target_group.gwlb.arn
-  target_id        = element(module.fw_az2.instance_id, count.index)
+  target_id        = each.value.instance_id
   port             = 6081
 }
 
@@ -124,7 +136,7 @@ resource "aws_vpc_endpoint" "az2" {
   service_name      = aws_vpc_endpoint_service.gwlb.service_name
   subnet_ids        = [module.vmseries_subnets.subnet_ids["gwlbe-az2"]]
   vpc_endpoint_type = aws_vpc_endpoint_service.gwlb.service_type
-  vpc_id            = aws_vpc.security.id
+  vpc_id            = aws_vpc.inspection.id
 
   tags = {
     Name = "${local.gwlb_name}-endpoint-az2"
@@ -160,5 +172,18 @@ output "inspection_vpc_endpoint_ids" {
   value = {
     az1 = aws_vpc_endpoint.az1.id
     az2 = aws_vpc_endpoint.az2.id
+  }
+}
+
+# =============================================================================
+# TARGET GROUP ATTACHMENT INFO
+# =============================================================================
+
+output "target_group_attachments" {
+  description = "Information about target group attachments"
+  value = {
+    az1_count = length(aws_lb_target_group_attachment.az1)
+    az2_count = length(aws_lb_target_group_attachment.az2)
+    total_targets = length(aws_lb_target_group_attachment.az1) + length(aws_lb_target_group_attachment.az2)
   }
 }

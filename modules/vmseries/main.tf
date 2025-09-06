@@ -1,5 +1,5 @@
 # =============================================================================
-# VM-SERIES MODULE (PHASE 1 - BACKWARD COMPATIBLE)
+# VM-SERIES MODULE (PHASE 1 - BACKWARD COMPATIBLE) - UPDATED FOR FOR_EACH
 # =============================================================================
 
 # =============================================================================
@@ -36,11 +36,18 @@ data "aws_caller_identity" "current" {}
 # =============================================================================
 
 locals {
-  # Calculate actual VM count
-  vm_count = var.vm_count
-
   # ✅ BACKWARD COMPATIBILITY: Use new variable if provided, otherwise fall back to old one
   mgmt_cidrs = var.mgmt_sg_cidrs != null ? var.mgmt_sg_cidrs : var.eni0_sg_prefix
+
+  # ✅ NEW: Create instance map for for_each
+  eni_instances = {
+    for i in range(var.vm_count) : "instance-${i}" => {
+      index = i
+    }
+  }
+  
+  # ✅ NEW: ENI2 instances (only when subnet provided)
+  eni2_instances = var.eni2_subnet != null ? local.eni_instances : {}
 
   # Common tags for all resources
   common_tags = merge(
@@ -138,66 +145,67 @@ resource "aws_security_group" "data" {
 }
 
 # =============================================================================
-# NETWORK INTERFACES
+# NETWORK INTERFACES - CONVERTED TO FOR_EACH
 # =============================================================================
 
 # ENI0 - Trust/Data Interface
 resource "aws_network_interface" "eni0" {
-  count           = local.vm_count
-  subnet_id       = var.eni0_subnet
-  security_groups = [aws_security_group.data.id]
+  for_each = local.eni_instances
   
+  subnet_id         = var.eni0_subnet
+  security_groups   = [aws_security_group.data.id]
   source_dest_check = false
-  description       = "${var.name}-${count.index}-trust"
+  description       = "${var.name}-${each.value.index}-trust"
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}-eni0"
+    Name = "${var.name}-${each.value.index}-eni0"
     Type = "trust"
   })
 }
 
 # ENI1 - Management Interface
 resource "aws_network_interface" "eni1" {
-  count           = local.vm_count
-  subnet_id       = var.eni1_subnet
-  security_groups = [aws_security_group.management.id]
+  for_each = local.eni_instances
   
+  subnet_id         = var.eni1_subnet
+  security_groups   = [aws_security_group.management.id]
   source_dest_check = true  # Management interface should have source/dest check
-  description       = "${var.name}-${count.index}-management"
+  description       = "${var.name}-${each.value.index}-management"
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}-eni1"
+    Name = "${var.name}-${each.value.index}-eni1"
     Type = "management"
   })
 }
 
 # ENI2 - Untrust/Data Interface (Optional)
 resource "aws_network_interface" "eni2" {
-  count           = var.eni2_subnet != null ? local.vm_count : 0
-  subnet_id       = var.eni2_subnet
-  security_groups = [aws_security_group.data.id]
+  for_each = local.eni2_instances
   
+  subnet_id         = var.eni2_subnet
+  security_groups   = [aws_security_group.data.id]
   source_dest_check = false
-  description       = "${var.name}-${count.index}-untrust"
+  description       = "${var.name}-${each.value.index}-untrust"
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}-eni2"
+    Name = "${var.name}-${each.value.index}-eni2"
     Type = "untrust"
   })
 }
 
 # =============================================================================
-# ELASTIC IPs
+# ELASTIC IPs - CONVERTED TO FOR_EACH
 # =============================================================================
 
 # EIP for ENI0 (Trust) - if requested
 resource "aws_eip" "eni0" {
-  count             = var.eni0_public_ip ? local.vm_count : 0
+  for_each = var.eni0_public_ip ? local.eni_instances : {}
+  
   domain            = "vpc"
-  network_interface = aws_network_interface.eni0[count.index].id
+  network_interface = aws_network_interface.eni0[each.key].id
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}-eni0-eip"
+    Name = "${var.name}-${each.value.index}-eni0-eip"
     Type = "Trust"
   })
 
@@ -206,12 +214,13 @@ resource "aws_eip" "eni0" {
 
 # EIP for ENI1 (Management)
 resource "aws_eip" "eni1" {
-  count             = var.eni1_public_ip ? local.vm_count : 0
+  for_each = var.eni1_public_ip ? local.eni_instances : {}
+  
   domain            = "vpc"
-  network_interface = aws_network_interface.eni1[count.index].id
+  network_interface = aws_network_interface.eni1[each.key].id
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}-eni1-eip"
+    Name = "${var.name}-${each.value.index}-eni1-eip"
     Type = "Management"
   })
 
@@ -220,12 +229,13 @@ resource "aws_eip" "eni1" {
 
 # EIP for ENI2 (Untrust) - if interface exists and requested
 resource "aws_eip" "eni2" {
-  count             = (var.eni2_subnet != null && var.eni2_public_ip) ? local.vm_count : 0
+  for_each = var.eni2_public_ip ? local.eni2_instances : {}
+  
   domain            = "vpc"
-  network_interface = aws_network_interface.eni2[count.index].id
+  network_interface = aws_network_interface.eni2[each.key].id
 
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}-eni2-eip"
+    Name = "${var.name}-${each.value.index}-eni2-eip"
     Type = "Untrust"
   })
 
@@ -233,11 +243,11 @@ resource "aws_eip" "eni2" {
 }
 
 # =============================================================================
-# VM-SERIES INSTANCES
+# VM-SERIES INSTANCES - CONVERTED TO FOR_EACH
 # =============================================================================
 
 resource "aws_instance" "vmseries" {
-  count = local.vm_count
+  for_each = local.eni_instances
 
   # Basic instance configuration
   ami           = data.aws_ami.vmseries.image_id
@@ -269,12 +279,12 @@ resource "aws_instance" "vmseries" {
   # Network interfaces
   network_interface {
     device_index         = 0
-    network_interface_id = aws_network_interface.eni0[count.index].id
+    network_interface_id = aws_network_interface.eni0[each.key].id
   }
 
   network_interface {
     device_index         = 1
-    network_interface_id = aws_network_interface.eni1[count.index].id
+    network_interface_id = aws_network_interface.eni1[each.key].id
   }
 
   # Optional third interface
@@ -282,15 +292,15 @@ resource "aws_instance" "vmseries" {
     for_each = var.eni2_subnet != null ? [1] : []
     content {
       device_index         = 2
-      network_interface_id = aws_network_interface.eni2[count.index].id
+      network_interface_id = aws_network_interface.eni2[each.key].id
     }
   }
 
   # Comprehensive tagging
   tags = merge(local.common_tags, {
-    Name = "${var.name}-${count.index}"
+    Name = "${var.name}-${each.value.index}"
     Type = "VM-Series"
-    AZ   = aws_network_interface.eni0[count.index].availability_zone
+    AZ   = aws_network_interface.eni0[each.key].availability_zone
   })
 
   # Dependencies

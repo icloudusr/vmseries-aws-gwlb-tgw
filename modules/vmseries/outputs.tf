@@ -1,5 +1,5 @@
 # =============================================================================
-# VM-SERIES MODULE - OUTPUTS
+# VM-SERIES MODULE - OUTPUTS (UPDATED FOR FOR_EACH)
 # =============================================================================
 
 # =============================================================================
@@ -8,13 +8,13 @@
 
 output "instance_id" {
   description = "List of VM-Series instance IDs"
-  value       = aws_instance.vmseries[*].id
+  value       = values(aws_instance.vmseries)[*].id
 }
 
 output "instance_details" {
   description = "Detailed information about VM-Series instances"
   value = [
-    for idx, instance in aws_instance.vmseries : {
+    for instance in aws_instance.vmseries : {
       id                = instance.id
       availability_zone = instance.availability_zone
       instance_type     = instance.instance_type
@@ -32,32 +32,32 @@ output "instance_details" {
 
 output "eni0_id" {
   description = "List of ENI0 (Trust/Data) network interface IDs"
-  value       = aws_network_interface.eni0[*].id
+  value       = values(aws_network_interface.eni0)[*].id
 }
 
 output "eni0_private_ip" {
   description = "List of ENI0 (Trust/Data) private IP addresses"
-  value       = aws_network_interface.eni0[*].private_ip
+  value       = values(aws_network_interface.eni0)[*].private_ip
 }
 
 output "eni1_id" {
   description = "List of ENI1 (Management) network interface IDs"
-  value       = aws_network_interface.eni1[*].id
+  value       = values(aws_network_interface.eni1)[*].id
 }
 
 output "eni1_private_ip" {
   description = "List of ENI1 (Management) private IP addresses"
-  value       = aws_network_interface.eni1[*].private_ip
+  value       = values(aws_network_interface.eni1)[*].private_ip
 }
 
 output "eni2_id" {
   description = "List of ENI2 (Untrust/Data) network interface IDs (if created)"
-  value       = var.eni2_subnet != null ? aws_network_interface.eni2[*].id : []
+  value       = length(aws_network_interface.eni2) > 0 ? values(aws_network_interface.eni2)[*].id : []
 }
 
 output "eni2_private_ip" {
   description = "List of ENI2 (Untrust/Data) private IP addresses (if created)"
-  value       = var.eni2_subnet != null ? aws_network_interface.eni2[*].private_ip : []
+  value       = length(aws_network_interface.eni2) > 0 ? values(aws_network_interface.eni2)[*].private_ip : []
 }
 
 # =============================================================================
@@ -66,22 +66,22 @@ output "eni2_private_ip" {
 
 output "eni0_public_ip" {
   description = "List of ENI0 public IP addresses (if assigned)"
-  value       = var.eni0_public_ip ? aws_eip.eni0[*].public_ip : []
+  value       = length(aws_eip.eni0) > 0 ? values(aws_eip.eni0)[*].public_ip : []
 }
 
 output "eni1_public_ip" {
   description = "List of ENI1 public IP addresses (if assigned)"
-  value       = var.eni1_public_ip ? aws_eip.eni1[*].public_ip : []
+  value       = length(aws_eip.eni1) > 0 ? values(aws_eip.eni1)[*].public_ip : []
 }
 
 output "eni2_public_ip" {
   description = "List of ENI2 public IP addresses (if assigned)"
-  value       = (var.eni2_subnet != null && var.eni2_public_ip) ? aws_eip.eni2[*].public_ip : []
+  value       = length(aws_eip.eni2) > 0 ? values(aws_eip.eni2)[*].public_ip : []
 }
 
 output "management_public_ips" {
   description = "Management interface public IP addresses"
-  value       = var.eni1_public_ip ? aws_eip.eni1[*].public_ip : []
+  value       = length(aws_eip.eni1) > 0 ? values(aws_eip.eni1)[*].public_ip : []
 }
 
 # =============================================================================
@@ -90,15 +90,15 @@ output "management_public_ips" {
 
 output "management_urls" {
   description = "HTTPS management URLs for VM-Series firewalls"
-  value = var.eni1_public_ip ? [
+  value = length(aws_eip.eni1) > 0 ? [
     for eip in aws_eip.eni1 : "https://${eip.public_ip}"
   ] : []
 }
 
 output "management_ssh_commands" {
   description = "SSH commands to access VM-Series management interfaces"
-  value = var.eni1_public_ip ? [
-    for idx, eip in aws_eip.eni1 : "ssh admin@${eip.public_ip} -i ~/.ssh/${var.key_name}.pem"
+  value = length(aws_eip.eni1) > 0 ? [
+    for k, eip in aws_eip.eni1 : "ssh admin@${eip.public_ip} -i ~/.ssh/${var.key_name}.pem"
   ] : []
 }
 
@@ -117,26 +117,26 @@ output "data_security_group_id" {
 }
 
 # =============================================================================
-# SUMMARY OUTPUT
+# SUMMARY OUTPUT - UPDATED FOR FOR_EACH
 # =============================================================================
 
 output "vm_series_summary" {
   description = "Summary of deployed VM-Series firewalls"
   value = {
-    total_instances = local.vm_count
+    total_instances = var.vm_count
     instance_type   = var.size
     panos_version   = var.panos
     license_type    = var.license
     
     instances = [
-      for idx in range(local.vm_count) : {
-        name           = "${var.name}-${idx}"
-        instance_id    = aws_instance.vmseries[idx].id
-        trust_ip       = aws_network_interface.eni0[idx].private_ip
-        mgmt_ip        = aws_network_interface.eni1[idx].private_ip
-        untrust_ip     = var.eni2_subnet != null ? aws_network_interface.eni2[idx].private_ip : null
-        mgmt_public_ip = var.eni1_public_ip ? aws_eip.eni1[idx].public_ip : null
-        mgmt_url       = var.eni1_public_ip ? "https://${aws_eip.eni1[idx].public_ip}" : null
+      for k, v in local.eni_instances : {
+        name           = "${var.name}-${v.index}"
+        instance_id    = aws_instance.vmseries[k].id
+        trust_ip       = aws_network_interface.eni0[k].private_ip
+        mgmt_ip        = aws_network_interface.eni1[k].private_ip
+        untrust_ip     = var.eni2_subnet != null ? aws_network_interface.eni2[k].private_ip : null
+        mgmt_public_ip = var.eni1_public_ip && length(aws_eip.eni1) > 0 ? aws_eip.eni1[k].public_ip : null
+        mgmt_url       = var.eni1_public_ip && length(aws_eip.eni1) > 0 ? "https://${aws_eip.eni1[k].public_ip}" : null
       }
     ]
   }
@@ -148,5 +148,35 @@ output "vm_series_summary" {
 
 output "availability_zones" {
   description = "Availability zones where VM-Series instances are deployed"
-  value       = distinct(aws_instance.vmseries[*].availability_zone)
+  value       = distinct(values(aws_instance.vmseries)[*].availability_zone)
+}
+
+# =============================================================================
+# FOR_EACH COMPATIBILITY OUTPUTS
+# =============================================================================
+
+output "instance_map" {
+  description = "Map of instance keys to instance details"
+  value = {
+    for k, v in aws_instance.vmseries : k => {
+      id                = v.id
+      availability_zone = v.availability_zone
+      private_ip        = v.private_ip
+      public_ip         = v.public_ip
+    }
+  }
+}
+
+output "eni_map" {
+  description = "Map of ENI details by instance"
+  value = {
+    for k, v in local.eni_instances : k => {
+      eni0_id         = aws_network_interface.eni0[k].id
+      eni0_private_ip = aws_network_interface.eni0[k].private_ip
+      eni1_id         = aws_network_interface.eni1[k].id
+      eni1_private_ip = aws_network_interface.eni1[k].private_ip
+      eni2_id         = var.eni2_subnet != null ? aws_network_interface.eni2[k].id : null
+      eni2_private_ip = var.eni2_subnet != null ? aws_network_interface.eni2[k].private_ip : null
+    }
+  }
 }

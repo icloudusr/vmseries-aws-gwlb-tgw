@@ -46,13 +46,13 @@ variable "fw_prefix" {
 
 variable "fw_count_az1" {
   description = "FW Count for AZ1"
-  type        = string
+  type        = number
   default = 1 
 }
 
 variable "fw_count_az2" {
   description = "FW Count for AZ2"
-  type        = string 
+  type        = number 
   default = 1 
 }
 

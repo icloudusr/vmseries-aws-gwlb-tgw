@@ -35,7 +35,7 @@ resource "aws_route_table_association" "main" {
 # =============================================================================
 
 data "aws_route_table" "main" {
-  id = var.route_table_id
+  route_table_id = var.route_table_id
 }
 
 data "aws_subnet" "subnets" {

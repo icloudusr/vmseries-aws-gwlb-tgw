@@ -1,4 +1,4 @@
-# =============================================================================
+  # =============================================================================
 # VM-SERIES MODULE - VARIABLES (PHASE 1 - BACKWARD COMPATIBLE)
 # =============================================================================
 
@@ -104,6 +104,11 @@ variable "vm_count" {
   description = "Number of VM-Series instances to deploy"
   type        = number
   default     = 1
+
+  validation {
+    condition     = var.vm_count > 0 && var.vm_count <= 10
+    error_message = "vm_count must be at between 0 and 10"
+  }
 }
 
 variable "instance_profile" {
@@ -196,13 +201,4 @@ variable "dependencies" {
   description = "DEPRECATED: This variable is no longer used"
   type        = list(string)
   default     = []
-}
-
-# =============================================================================
-# LOCALS FOR COMPATIBILITY
-# =============================================================================
-
-locals {
-  # ✅ BACKWARD COMPATIBILITY: Use new variable if provided, otherwise fall back to old one
-  mgmt_cidrs = var.mgmt_sg_cidrs != null ? var.mgmt_sg_cidrs : var.eni0_sg_prefix
 }

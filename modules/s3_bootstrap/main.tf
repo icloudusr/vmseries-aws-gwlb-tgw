@@ -160,7 +160,12 @@ resource "aws_s3_object" "other_files" {
 resource "aws_s3_object" "empty_directories" {
   for_each = toset([
     for dir in ["config", "content", "license", "software"] : dir
-    if length(lookup(local, "${dir}_files_final", [])) == 0
+    if (
+      (dir == "config" && length(local.config_files_final) == 0) ||
+      (dir == "content" && length(local.content_files_final) == 0) ||
+      (dir == "license" && length(local.license_files_final) == 0) ||
+      (dir == "software" && length(local.software_files_final) == 0)
+    )
   ])
 
   bucket  = aws_s3_bucket.bootstrap.id
