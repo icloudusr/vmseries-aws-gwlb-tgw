@@ -100,9 +100,9 @@ resource "aws_vpc_endpoint_service" "gwlb" {
   acceptance_required        = false
   gateway_load_balancer_arns = [aws_lb.gwlb.arn]
 
-  allowed_principals = [
-    data.aws_caller_identity.current.arn
-  ]
+#  allowed_principals = [
+#    data.aws_caller_identity.current.arn
+#  ]
 
   tags = {
     Name = "${local.gwlb_name}-endpoint-service"

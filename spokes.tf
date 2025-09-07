@@ -276,6 +276,13 @@ resource "aws_instance" "spk1_vm1" {
   key_name                = var.key_name
   user_data               = base64encode(file("${path.module}/scripts/web_startup.yml.tpl"))
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"  # This enforces IMDSv2
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
+
   root_block_device {
     delete_on_termination = true
     encrypted             = true
@@ -297,6 +304,13 @@ resource "aws_instance" "spk1_vm2" {
   instance_type           = var.spoke_size
   key_name                = var.key_name
   user_data               = base64encode(file("${path.module}/scripts/web_startup.yml.tpl"))
+  
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"  # This enforces IMDSv2
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
 
   root_block_device {
     delete_on_termination = true
@@ -492,22 +506,29 @@ resource "aws_network_interface" "spk2_vm1" {
   }
 }
 
-resource "aws_eip" "spk2_vm1" {
-  domain            = "vpc"
-  network_interface = aws_network_interface.spk2_vm1.id
-
-  tags = {
-    Name = "${var.spk2_prefix}-vm1-eip"
-  }
-
-  depends_on = [aws_internet_gateway.spk2]
-}
+#resource "aws_eip" "spk2_vm1" {
+#  domain            = "vpc"
+#  network_interface = aws_network_interface.spk2_vm1.id
+#
+#  tags = {
+#    Name = "${var.spk2_prefix}-vm1-eip"
+#  }
+#
+#  depends_on = [aws_internet_gateway.spk2]
+#}
 
 resource "aws_instance" "spk2_vm1" {
   disable_api_termination = false
   ami                     = data.aws_ami.ubuntu.id
   instance_type           = var.spoke_size
   key_name                = var.key_name
+
+metadata_options {
+  http_endpoint               = "enabled"
+  http_tokens                 = "required"  # This enforces IMDSv2
+  http_put_response_hop_limit = 1
+  instance_metadata_tags      = "enabled"
+}
 
   root_block_device {
     delete_on_termination = true
@@ -523,24 +544,48 @@ resource "aws_instance" "spk2_vm1" {
     Name = "${var.spk2_prefix}-vm1"
   }
 
-  depends_on = [aws_eip.spk2_vm1]
+  # depends_on = [aws_eip.spk2_vm1]
 }
 
 # =============================================================================
 # OUTPUTS - ENHANCED FORMAT
 # =============================================================================
 
+#output "spk1_alb_url" {
+#  description = "Spk1 Application Load Balancer URL"
+#  value       = "http://${aws_lb.spk1.dns_name}"
+#}
+
+#output "spk2_ssh_access" {
+#  description = "SSH command to access Spk2 jump host"
+#  value       = "ssh ubuntu@${aws_eip.spk2_vm1.public_ip} -i ~/.ssh/${var.key_name}.pem"
+#}
+
+#output "spk2_public_ip" {
+#  description = "Spk2 VM1 public IP address"
+#  value       = aws_eip.spk2_vm1.public_ip
+#}
+
+
 output "spk1_alb_url" {
   description = "Spk1 Application Load Balancer URL"
   value       = "http://${aws_lb.spk1.dns_name}"
 }
 
+# Update this output to use private IP instead
 output "spk2_ssh_access" {
-  description = "SSH command to access Spk2 jump host"
-  value       = "ssh ubuntu@${aws_eip.spk2_vm1.public_ip} -i ~/.ssh/${var.key_name}.pem"
+  description = "SSH command to access Spk2 jump host (private IP)"
+  value       = "ssh ubuntu@${aws_network_interface.spk2_vm1.private_ip} -i ~/.ssh/${var.key_name}.pem"
 }
 
-output "spk2_public_ip" {
-  description = "Spk2 VM1 public IP address"
-  value       = aws_eip.spk2_vm1.public_ip
+# Update this output to show private IP instead
+output "spk2_private_ip" {
+  description = "Spk2 VM1 private IP address"
+  value       = aws_network_interface.spk2_vm1.private_ip
+}
+
+# Optional: Add a note about no public access
+output "spk2_access_note" {
+  description = "Note about SPK2 access"
+  value       = "SPK2 VM has no public IP due to SCP restrictions. Access via VPN or bastion host."
 }

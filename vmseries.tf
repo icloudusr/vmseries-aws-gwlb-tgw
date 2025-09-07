@@ -58,8 +58,8 @@ module "fw_az1" {
 
   # Public IP configuration
   eni0_public_ip = false
-  eni1_public_ip = true
-  eni2_public_ip = true
+  eni1_public_ip = false 
+  eni2_public_ip = false 
 
   # Bootstrap configuration
   user_data        = "vmseries-bootstrap-aws-s3bucket=${module.vmseries_bootstrap.bucket_name}\nmgmt-interface-swap=enable"
@@ -103,8 +103,8 @@ module "fw_az2" {
 
   # Public IP configuration
   eni0_public_ip = false
-  eni1_public_ip = true
-  eni2_public_ip = true
+  eni1_public_ip = false
+  eni2_public_ip = false 
 
   # Bootstrap configuration
   user_data        = "vmseries-bootstrap-aws-s3bucket=${module.vmseries_bootstrap.bucket_name}\nmgmt-interface-swap=enable"

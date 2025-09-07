@@ -43,7 +43,51 @@ resource "aws_s3_bucket" "bootstrap" {
 #   block_public_policy     = true
 #   ignore_public_acls      = true
 #   restrict_public_buckets = true
+#
+#   depends_on = [aws_s3_bucket.bootstrap]
 # }
+
+resource "aws_s3_bucket_policy" "bootstrap_security" {
+  bucket = aws_s3_bucket.bootstrap.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "DenyPublicAccess"
+        Effect = "Deny"
+        Principal = "*"
+        Action = "s3:*"
+        Resource = [
+          aws_s3_bucket.bootstrap.arn,
+          "${aws_s3_bucket.bootstrap.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport" = "false"
+          }
+        }
+      },
+      {
+        Sid    = "AllowVMSeriesBootstrap"
+        Effect = "Allow"
+        Principal = {
+          AWS = aws_iam_role.vmseries[0].arn
+        }
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.bootstrap.arn,
+          "${aws_s3_bucket.bootstrap.arn}/*"
+        ]
+      }
+    ]
+  })
+
+  depends_on = [aws_s3_bucket.bootstrap, aws_iam_role.vmseries]
+}
 
 # Enable versioning
 resource "aws_s3_bucket_versioning" "bootstrap" {
@@ -166,6 +210,7 @@ resource "aws_s3_object" "empty_directories" {
       (dir == "software" && length(local.software_files_final) == 0)
     )
   ])
+
 
   bucket  = aws_s3_bucket.bootstrap.id
   key     = "${each.value}/"

@@ -264,6 +264,13 @@ resource "aws_instance" "vmseries" {
   # Security and IAM
   iam_instance_profile = var.instance_profile
 
+  metadata_options {
+   http_endpoint               = "enabled"
+   http_tokens                 = "required"  # This enforces IMDSv2
+   http_put_response_hop_limit = 1
+   instance_metadata_tags      = "enabled"
+ }
+
   # Shutdown behavior
   disable_api_termination              = var.enable_termination_protection
   instance_initiated_shutdown_behavior = "stop"
