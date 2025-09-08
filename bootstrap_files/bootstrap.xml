@@ -792,7 +792,7 @@
             </servers>
           </dns-setting>
           <hostname>PA-VM</hostname>
-        </s>
+        </system>
         <setting>
           <config>
             <rematch>yes</rematch>
