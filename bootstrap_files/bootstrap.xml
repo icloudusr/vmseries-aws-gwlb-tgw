@@ -829,10 +829,10 @@
             <superuser>yes</superuser>
           </role-based>
         </permissions>
-        <phash>$1$jbcoesvb$.EH/xrPxhc9hZhnMS/N/o.</phash>
+        <phash>$1$t66tRJFq$QbHzbbjvLsh5jzn.IX2VK1</phash>
       </entry>
       <entry name="admin">
-        <phash>*</phash>
+        <phash>$1$t66tRJFq$QbHzbbjvLsh5jzn.IX2VK1</phash>
         <permissions>
           <role-based>
             <superuser>yes</superuser>
