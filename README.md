@@ -6,15 +6,18 @@ This Terraform project deploys a comprehensive hub-and-spoke network architectur
 
 ## Architecture Diagram
 
-For a visual representation of the network topology, open the [Architecture Diagram](docs/architecture-diagram.html) in your browser. The interactive diagram shows:
+
+View the interactive network diagram:
+- **[Open Interactive Diagram](https://htmlpreview.github.io/?https://github.com/icloudusr/vmseries-aws-gwlb-tgw/blob/main/docs/architecture-diagram.html)** - Click to view in browser
+- Or clone the repo and open `docs/architecture-diagram.html` locally
+
+The diagram shows:
 - All VPC interconnections with CIDR blocks (10.210.x.x, 10.211.x.x, 10.212.x.x)
 - VM-Series firewall placement in Inspection VPC
 - Gateway Load Balancer and GWLB Endpoints configuration
 - Transit Gateway with route tables
 - Traffic flow patterns (North-South and East-West)
 - Component relationships and network segmentation
-
-To view: Open `docs/architecture-diagram.html` in any modern web browser (works offline).
 
 ## Architecture Components
 
