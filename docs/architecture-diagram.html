@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VM-Series AWS GWLB/TGW Architecture</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 10px;
+        }
+        
+        .legend h3 {
+            margin-top: 0;
+            color: #2d3748;
+            font-size: 18px;
+        }
+        
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e0;
+        }
+        
+        .info-panel {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .info-card {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-card h4 {
+            margin-top: 0;
+            color: #2d3748;
+            font-size: 16px;
+        }
+        
+        .info-card ul {
+            margin: 10px 0;
+            padding-left: 20px;
+            color: #4a5568;
+            font-size: 14px;
+        }
+        
+        .traffic-flow {
+            margin-top: 30px;
+            padding: 20px;
+            background: #edf2f7;
+            border-radius: 10px;
+        }
+        
+        .flow-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            font-size: 14px;
+            color: #4a5568;
+        }
+        
+        .flow-arrow {
+            margin: 0 10px;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VM-Series AWS Gateway Load Balancer with Transit Gateway</h1>
+        <p class="subtitle">Hub & Spoke Network Architecture with Centralized Security Inspection</p>
+        
+        <svg viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background regions -->
+            <rect x="10" y="10" width="1180" height="880" fill="#f0f4f8" stroke="#cbd5e0" stroke-width="2" rx="10"/>
+            
+            <!-- Internet Cloud -->
+            <g id="internet">
+                <ellipse cx="600" cy="60" rx="120" ry="40" fill="#e2e8f0" stroke="#718096" stroke-width="2"/>
+                <text x="600" y="65" text-anchor="middle" font-size="16" font-weight="bold" fill="#2d3748">INTERNET</text>
+            </g>
+            
+            <!-- Spoke1 VPC -->
+            <g id="spoke1-vpc">
+                <rect x="40" y="150" width="350" height="300" fill="#fef5e7" stroke="#f39c12" stroke-width="2" rx="10"/>
+                <text x="215" y="175" text-anchor="middle" font-size="14" font-weight="bold" fill="#2d3748">Spoke1 VPC (10.211.0.0/16)</text>
+                
+                <!-- ALB -->
+                <rect x="160" y="190" width="110" height="40" fill="#3498db" stroke="#2980b9" stroke-width="2" rx="5"/>
+                <text x="215" y="215" text-anchor="middle" font-size="12" fill="white">ALB</text>
+                
+                <!-- GWLB Endpoints -->
+                <rect x="80" y="250" width="100" height="30" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+                <text x="130" y="270" text-anchor="middle" font-size="11" fill="white">GWLBE AZ1</text>
+                
+                <rect x="250" y="250" width="100" height="30" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+                <text x="300" y="270" text-anchor="middle" font-size="11" fill="white">GWLBE AZ2</text>
+                
+                <!-- Web Servers -->
+                <g id="web-servers">
+                    <rect x="80" y="310" width="100" height="60" fill="#27ae60" stroke="#229954" stroke-width="2" rx="5"/>
+                    <text x="130" y="335" text-anchor="middle" font-size="11" fill="white">Web Server</text>
+                    <text x="130" y="350" text-anchor="middle" font-size="10" fill="white">10.211.0.4</text>
+                    
+                    <rect x="250" y="310" width="100" height="60" fill="#27ae60" stroke="#229954" stroke-width="2" rx="5"/>
+                    <text x="300" y="335" text-anchor="middle" font-size="11" fill="white">Web Server</text>
+                    <text x="300" y="350" text-anchor="middle" font-size="10" fill="white">10.211.0.20</text>
+                </g>
+                
+                <!-- IGW -->
+                <rect x="190" y="390" width="60" height="30" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                <text x="220" y="410" text-anchor="middle" font-size="11" fill="white">IGW</text>
+            </g>
+            
+            <!-- Spoke2 VPC -->
+            <g id="spoke2-vpc">
+                <rect x="810" y="150" width="350" height="300" fill="#e8f8f5" stroke="#16a085" stroke-width="2" rx="10"/>
+                <text x="985" y="175" text-anchor="middle" font-size="14" font-weight="bold" fill="#2d3748">Spoke2 VPC (10.212.0.0/16)</text>
+                
+                <!-- Jump Host -->
+                <rect x="900" y="270" width="160" height="60" fill="#27ae60" stroke="#229954" stroke-width="2" rx="5"/>
+                <text x="980" y="295" text-anchor="middle" font-size="11" fill="white">Jump Host (SSH)</text>
+                <text x="980" y="310" text-anchor="middle" font-size="10" fill="white">10.212.0.4</text>
+                
+                <!-- IGW -->
+                <rect x="950" y="390" width="60" height="30" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                <text x="980" y="410" text-anchor="middle" font-size="11" fill="white">IGW</text>
+            </g>
+            
+            <!-- Inspection VPC -->
+            <g id="inspection-vpc">
+                <rect x="420" y="150" width="360" height="450" fill="#fef2f2" stroke="#ef4444" stroke-width="3" rx="10"/>
+                <text x="600" y="175" text-anchor="middle" font-size="14" font-weight="bold" fill="#2d3748">Inspection VPC (10.210.0.0/16)</text>
+                
+                <!-- Gateway Load Balancer -->
+                <rect x="470" y="200" width="260" height="50" fill="#dc2626" stroke="#b91c1c" stroke-width="2" rx="5"/>
+                <text x="600" y="225" text-anchor="middle" font-size="14" font-weight="bold" fill="white">Gateway Load Balancer</text>
+                <text x="600" y="240" text-anchor="middle" font-size="10" fill="white">Cross-Zone Enabled</text>
+                
+                <!-- VM-Series Firewalls -->
+                <g id="firewalls">
+                    <!-- AZ1 Firewall -->
+                    <rect x="460" y="280" width="120" height="80" fill="#f97316" stroke="#ea580c" stroke-width="2" rx="5"/>
+                    <text x="520" y="305" text-anchor="middle" font-size="12" font-weight="bold" fill="white">VM-Series</text>
+                    <text x="520" y="320" text-anchor="middle" font-size="10" fill="white">AZ1</text>
+                    <text x="520" y="335" text-anchor="middle" font-size="9" fill="white">Trust: 10.210.1.6</text>
+                    <text x="520" y="348" text-anchor="middle" font-size="9" fill="white">Mgmt: 10.210.0.10</text>
+                    
+                    <!-- AZ2 Firewall -->
+                    <rect x="620" y="280" width="120" height="80" fill="#f97316" stroke="#ea580c" stroke-width="2" rx="5"/>
+                    <text x="680" y="305" text-anchor="middle" font-size="12" font-weight="bold" fill="white">VM-Series</text>
+                    <text x="680" y="320" text-anchor="middle" font-size="10" fill="white">AZ2</text>
+                    <text x="680" y="335" text-anchor="middle" font-size="9" fill="white">Trust: 10.210.1.22</text>
+                    <text x="680" y="348" text-anchor="middle" font-size="9" fill="white">Mgmt: 10.210.0.25</text>
+                </g>
+                
+                <!-- GWLB Endpoints in Inspection VPC -->
+                <rect x="470" y="390" width="100" height="30" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+                <text x="520" y="410" text-anchor="middle" font-size="11" fill="white">GWLBE AZ1</text>
+                
+                <rect x="630" y="390" width="100" height="30" fill="#9b59b6" stroke="#8e44ad" stroke-width="2" rx="5"/>
+                <text x="680" y="410" text-anchor="middle" font-size="11" fill="white">GWLBE AZ2</text>
+                
+                <!-- S3 Endpoint -->
+                <rect x="540" y="450" width="120" height="30" fill="#ff9900" stroke="#ff6600" stroke-width="2" rx="5"/>
+                <text x="600" y="470" text-anchor="middle" font-size="11" fill="white">S3 VPC Endpoint</text>
+                
+                <!-- Bootstrap Bucket -->
+                <rect x="520" y="510" width="160" height="40" fill="#ff9900" stroke="#ff6600" stroke-width="2" rx="5"/>
+                <text x="600" y="530" text-anchor="middle" font-size="11" fill="white">S3 Bootstrap Bucket</text>
+                <text x="600" y="545" text-anchor="middle" font-size="9" fill="white">Config & Licenses</text>
+                
+                <!-- IGW -->
+                <rect x="570" y="560" width="60" height="30" fill="#34495e" stroke="#2c3e50" stroke-width="2" rx="5"/>
+                <text x="600" y="580" text-anchor="middle" font-size="11" fill="white">IGW</text>
+            </g>
+            
+            <!-- Transit Gateway -->
+            <g id="transit-gateway">
+                <rect x="450" y="650" width="300" height="120" fill="#e0e7ff" stroke="#6366f1" stroke-width="3" rx="10"/>
+                <text x="600" y="680" text-anchor="middle" font-size="14" font-weight="bold" fill="#2d3748">Transit Gateway</text>
+                
+                <!-- Route Tables -->
+                <rect x="470" y="700" width="120" height="50" fill="#6366f1" stroke="#4f46e5" stroke-width="2" rx="5"/>
+                <text x="530" y="720" text-anchor="middle" font-size="11" fill="white">FW Route Table</text>
+                <text x="530" y="735" text-anchor="middle" font-size="9" fill="white">To Spokes</text>
+                
+                <rect x="610" y="700" width="120" height="50" fill="#6366f1" stroke="#4f46e5" stroke-width="2" rx="5"/>
+                <text x="670" y="720" text-anchor="middle" font-size="11" fill="white">Spoke Route Table</text>
+                <text x="670" y="735" text-anchor="middle" font-size="9" fill="white">0.0.0.0/0 → FW</text>
+            </g>
+            
+            <!-- Connection Lines -->
+            <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#4a5568"/>
+                </marker>
+                <marker id="arrowhead-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#3b82f6"/>
+                </marker>
+                <marker id="arrowhead-green" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#10b981"/>
+                </marker>
+            </defs>
+            
+            <!-- Internet to ALB -->
+            <line x1="600" y1="100" x2="215" y2="190" stroke="#3b82f6" stroke-width="3" marker-end="url(#arrowhead-blue)" stroke-dasharray="5,5"/>
+            
+            <!-- ALB to GWLBE -->
+            <line x1="190" y1="230" x2="130" y2="250" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+            <line x1="240" y1="230" x2="300" y2="250" stroke="#4a5568" stroke-width="2" marker-end="url(#arrowhead)"/>
+            
+            <!-- GWLBE Spoke1 to GWLB -->
+            <line x1="130" y1="265" x2="500" y2="225" stroke="#9b59b6" stroke-width="2" stroke-dasharray="3,3"/>
+            <line x1="300" y1="265" x2="500" y2="225" stroke="#9b59b6" stroke-width="2" stroke-dasharray="3,3"/>
+            
+            <!-- GWLB to Firewalls -->
+            <line x1="550" y1="250" x2="520" y2="280" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
+            <line x1="650" y1="250" x2="680" y2="280" stroke="#dc2626" stroke-width="2" marker-end="url(#arrowhead)"/>
+            
+            <!-- TGW Connections -->
+            <line x1="215" y1="450" x2="530" y2="650" stroke="#6366f1" stroke-width="2" stroke-dasharray="5,5"/>
+            <line x1="985" y1="450" x2="670" y2="650" stroke="#6366f1" stroke-width="2" stroke-dasharray="5,5"/>
+            <line x1="600" y1="600" x2="600" y2="650" stroke="#6366f1" stroke-width="2"/>
+            
+            <!-- S3 Bootstrap Connection -->
+            <line x1="600" y1="480" x2="600" y2="510" stroke="#ff9900" stroke-width="2" marker-end="url(#arrowhead)"/>
+            
+            <!-- Labels for connections -->
+            <text x="400" y="120" font-size="10" fill="#3b82f6">Internet Traffic</text>
+            <text x="350" y="240" font-size="10" fill="#9b59b6">GENEVE Encapsulation</text>
+            <text x="350" y="550" font-size="10" fill="#6366f1">TGW Attachments</text>
+        </svg>
+        
+        <div class="legend">
+            <h3>Component Legend</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #fef5e7; border-color: #f39c12;"></div>
+                    <span>Spoke1 VPC - Application</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e8f8f5; border-color: #16a085;"></div>
+                    <span>Spoke2 VPC - Management</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #fef2f2; border-color: #ef4444;"></div>
+                    <span>Inspection VPC - Security</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #e0e7ff; border-color: #6366f1;"></div>
+                    <span>Transit Gateway</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #dc2626;"></div>
+                    <span>Gateway Load Balancer</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f97316;"></div>
+                    <span>VM-Series Firewalls</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9b59b6;"></div>
+                    <span>GWLB Endpoints</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #27ae60;"></div>
+                    <span>EC2 Instances</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-card">
+                <h4>🔥 VM-Series Configuration</h4>
+                <ul>
+                    <li>PAN-OS Version: 11.1.6</li>
+                    <li>Instance Type: c6in.xlarge</li>
+                    <li>Interfaces: Management, Trust, Untrust</li>
+                    <li>Bootstrap: S3 with init-cfg.txt</li>
+                    <li>GWLB Plugin: Enabled</li>
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h4>🌐 Network Segments</h4>
+                <ul>
+                    <li>Inspection VPC: 10.210.0.0/16</li>
+                    <li>Spoke1 VPC: 10.211.0.0/16</li>
+                    <li>Spoke2 VPC: 10.212.0.0/16</li>
+                    <li>Management Access: 98.97.0.0/16</li>
+                </ul>
+            </div>
+            
+            <div class="info-card">
+                <h4>🔐 Security Features</h4>
+                <ul>
+                    <li>Centralized inspection via GWLB</li>
+                    <li>East-West traffic control via TGW</li>
+                    <li>North-South filtering at edge</li>
+                    <li>Automated bootstrap configuration</li>
+                    <li>Cross-zone load balancing</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="traffic-flow">
+            <h3>Traffic Flow Patterns</h3>
+            <div class="flow-item">
+                <strong>North-South (Inbound):</strong>
+                <span class="flow-arrow">→</span> Internet
+                <span class="flow-arrow">→</span> ALB (Spoke1)
+                <span class="flow-arrow">→</span> GWLBE
+                <span class="flow-arrow">→</span> GWLB
+                <span class="flow-arrow">→</span> VM-Series
+                <span class="flow-arrow">→</span> Web Servers
+            </div>
+            <div class="flow-item">
+                <strong>East-West (Spoke to Spoke):</strong>
+                <span class="flow-arrow">→</span> Spoke1
+                <span class="flow-arrow">→</span> Transit Gateway
+                <span class="flow-arrow">→</span> Inspection VPC
+                <span class="flow-arrow">→</span> GWLBE
+                <span class="flow-arrow">→</span> VM-Series
+                <span class="flow-arrow">→</span> Transit Gateway
+                <span class="flow-arrow">→</span> Spoke2
+            </div>
+            <div class="flow-item">
+                <strong>Outbound Internet:</strong>
+                <span class="flow-arrow">→</span> Spoke VM
+                <span class="flow-arrow">→</span> Transit Gateway
+                <span class="flow-arrow">→</span> Inspection VPC
+                <span class="flow-arrow">→</span> VM-Series (NAT)
+                <span class="flow-arrow">→</span> Internet Gateway
+                <span class="flow-arrow">→</span> Internet
+            </div>
+        </div>
+    </div>
+</body>
+</html>
