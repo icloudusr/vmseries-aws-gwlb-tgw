@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<config version="11.1.0" urldb="paloaltonetworks">
+<config version="11.2.0" urldb="paloaltonetworks">
   <devices>
     <entry name="localhost.localdomain">
       <network>
