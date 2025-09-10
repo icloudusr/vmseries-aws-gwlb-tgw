@@ -254,7 +254,7 @@ resource "aws_instance" "vmseries" {
   for_each = local.eni_instances
 
   # Basic instance configuration
-  ami           = data.aws_ami.vmseries.image_id
+  ami           = "ami-09b463a322d0ac7c9"
   instance_type = var.size
   key_name      = var.key_name
 
