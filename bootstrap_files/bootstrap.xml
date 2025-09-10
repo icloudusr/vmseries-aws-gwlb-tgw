@@ -458,7 +458,7 @@
           <application/>
           <application-group/>
           <service>
-            <entry name="tcp-22">
+            <entry name="service-tcp-22">
               <protocol>
                 <tcp>
                   <port>22</port>
@@ -474,39 +474,39 @@
           <rulebase>
             <security>
               <rules>
-                <entry name="gwlb-probe" uuid="70231416-5288-44b8-b2ac-5c384eea533b">
-                  <to loc="aws-gwlb">
-                    <member loc="aws-gwlb">trust</member>
+                <entry name="gwlb-ssh-healthcheck" uuid="12345678-1234-5678-9abc-123456789abc">
+                  <to>
+                    <member>trust</member>
                   </to>
-                  <from loc="aws-gwlb">
-                    <member loc="aws-gwlb">trust</member>
+                  <from>
+                    <member>trust</member>
                   </from>
-                  <source loc="aws-gwlb">
-                    <member loc="aws-gwlb">gwlbe</member>
+                  <source>
+                    <member>gwlbe</member>
                   </source>
-                  <destination loc="aws-gwlb">
-                    <member loc="aws-gwlb">any</member>
+                  <destination>
+                    <member>any</member>
                   </destination>
-                  <source-user loc="aws-gwlb">
-                    <member loc="aws-gwlb">any</member>
+                  <source-user>
+                    <member>any</member>
                   </source-user>
-                  <category loc="aws-gwlb">
-                    <member loc="aws-gwlb">any</member>
+                  <category>
+                    <member>any</member>
                   </category>
-                  <application loc="aws-gwlb">
-                    <member loc="aws-gwlb">any</member>
+                  <application>
+                    <member>ssh</member>
                   </application>
-                  <service loc="aws-gwlb">
-                    <member loc="aws-gwlb">service-http</member>
+                  <service>
+                    <member>service-tcp-22</member>
                   </service>
-                  <source-hip loc="aws-gwlb">
-                    <member loc="aws-gwlb">any</member>
+                  <source-hip>
+                    <member>any</member>
                   </source-hip>
-                  <destination-hip loc="aws-gwlb">
-                    <member loc="aws-gwlb">any</member>
+                  <destination-hip>
+                    <member>any</member>
                   </destination-hip>
-                  <action loc="aws-gwlb">allow</action>
-                  <log-setting loc="aws-gwlb">default</log-setting>
+                  <action>allow</action>
+                  <log-setting>default</log-setting>
                 </entry>
                 <entry name="east-west" uuid="580f6ea6-01c8-4f04-82ac-f911861fdf30">
                   <to loc="aws-gwlb">
