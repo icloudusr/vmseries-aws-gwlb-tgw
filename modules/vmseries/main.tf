@@ -9,12 +9,7 @@
 # Get VM-Series AMI
 data "aws_ami" "vmseries" {
   most_recent = true
-  owners      = ["aws-marketplace"]
-
-  filter {
-    name   = "owner-alias"
-    values = ["aws-marketplace"]
-  }
+  owners      = ["679593333241"]  # Palo Alto Networks AWS account
 
   filter {
     name   = "product-code"
@@ -23,7 +18,17 @@ data "aws_ami" "vmseries" {
 
   filter {
     name   = "name"
-    values = ["PA-VM-AWS-${var.panos}*"]
+    values = ["PA-VM*-AWS*${var.panos}*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
   }
 }
 
