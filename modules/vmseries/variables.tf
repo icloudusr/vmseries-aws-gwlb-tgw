@@ -194,9 +194,13 @@ variable "license_type_map" {
   description = "Mapping of license types to AWS Marketplace product codes"
   type        = map(string)
   default = {
-    "byol"    = "6njl1pau431dv1qxipg63mvah"
-    "bundle1" = "e9yfvyj3uag5uo5j2hjikv74n"
-    "bundle2" = "hd44w1chf26uv4p52cdynb2o"
+    # x86_64 licenses
+    "byol"     = "6njl1pau431dv1qxipg63mvah"
+    "bundle1"  = "e9yfvyj3uag5uo5j2hjikv74n"
+    "bundle2"  = "hd44w1chf26uv4p52cdynb2o"
+    # ARM64 licenses  
+    "arm-byol" = "70xbkm08ivye46l4gfa6c85v7"
+    "arm-payg" = "3qxryq2rjnyddvecce0pvhf2j"
   }
 }
 

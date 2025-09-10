@@ -6,27 +6,48 @@
 # DATA SOURCES
 # =============================================================================
 
-# Get VM-Series AMI
+# Determine if this is an ARM license
+locals {
+  is_arm_license = startswith(var.license, "arm-")
+  
+  # Name patterns for x86 vs ARM
+  name_pattern = local.is_arm_license ? "PA-VMARM-AWS-${var.panos}*" : "PA-VM-AWS-${var.panos}*"
+  
+  # Architecture filter
+  architecture = local.is_arm_license ? "arm64" : "x86_64"
+}
 
-# data "aws_ami" "vmseries" {
-#  most_recent = true
-#  owners      = ["679593333241"]  # Palo Alto Networks AWS account
+# Flexible AMI lookup that works for all license types and architectures
 
-#  filter {
-#   name   = "product-code"
-#    values = [var.license_type_map[var.license]]
-#  }
+data "aws_ami" "vmseries" {
+  most_recent = true
+  owners      = ["679593333241"] # Palo Alto Networks AWS account
 
-#  filter {
-#    name   = "name"
-#    values = ["PA-VM-AWS-${var.panos}*"]
-#  }
+  filter {
+    name   = "product-code"
+    values = [var.license_type_map[var.license]]
+  }
 
-#  filter {
-#    name   = "virtualization-type"
-#    values = ["hvm"]
-#  }
-# }
+  filter {
+    name   = "name"
+    values = [local.name_pattern]
+  }
+
+  filter {
+    name   = "architecture"
+    values = [local.architecture]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
 
 # Get current AWS region and account
 data "aws_region" "current" {}
@@ -254,7 +275,7 @@ resource "aws_instance" "vmseries" {
   for_each = local.eni_instances
 
   # Basic instance configuration
-  ami           = "ami-09b463a322d0ac7c9"
+  ami = data.aws_ami.vmseries.id
   instance_type = var.size
   key_name      = var.key_name
 
