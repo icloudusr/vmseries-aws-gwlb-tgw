@@ -19,7 +19,7 @@ fw_license = "byol"
 # fw_license         = "bundle1"
 # fw_license         = "bundle2"
 
-fw_panos          = "11.2.4" # Updated PAN-OS version
+fw_panos          = "11.2.8" # Updated PAN-OS version
 fw_prefix         = "swfw"   # Project-specific prefix
 fw_count_az1      = 1
 fw_count_az2      = 1
