@@ -38,15 +38,15 @@ resource "aws_lb_target_group" "gwlb" {
   target_type = "instance"
   vpc_id      = aws_vpc.inspection.id
 
-  health_check {
-    enabled             = true
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 5
-    interval            = 10
-    port                = "traffic-port"
-    protocol            = "TCP"
-  }
+health_check {
+  enabled             = true
+  healthy_threshold   = 2
+  unhealthy_threshold = 2
+  timeout             = 2
+  interval            = 7
+  port                = 22
+  protocol            = "TCP"
+}
 
   tags = {
     Name = "${local.gwlb_name}-tg"
