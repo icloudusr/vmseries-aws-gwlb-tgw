@@ -8,25 +8,25 @@
 
 # Get VM-Series AMI
 
-data "aws_ami" "vmseries" {
-  most_recent = true
-  owners      = ["679593333241"]  # Palo Alto Networks AWS account
+# data "aws_ami" "vmseries" {
+#  most_recent = true
+#  owners      = ["679593333241"]  # Palo Alto Networks AWS account
 
-  filter {
-    name   = "product-code"
-    values = [var.license_type_map[var.license]]
-  }
+#  filter {
+#   name   = "product-code"
+#    values = [var.license_type_map[var.license]]
+#  }
 
-  filter {
-    name   = "name"
-    values = ["PA-VM-AWS-${var.panos}*"]
-  }
+#  filter {
+#    name   = "name"
+#    values = ["PA-VM-AWS-${var.panos}*"]
+#  }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
+#  filter {
+#    name   = "virtualization-type"
+#    values = ["hvm"]
+#  }
+# }
 
 # Get current AWS region and account
 data "aws_region" "current" {}
